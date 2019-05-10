@@ -10,3 +10,4 @@ CTestTestfile.cmake
 .vscode
 build
 libs
+kafka
