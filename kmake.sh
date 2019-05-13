@@ -1,0 +1,1 @@
+g++ -std=c++11 -Xlinker --verbose  -Wall -I/home/kasunedu/test/cpp/kafka/cppkafka-0.3.1/include libs/KafkaTest.cpp main.cpp -lrdkafka -lcppkafka
