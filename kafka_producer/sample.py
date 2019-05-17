@@ -1,6 +1,5 @@
 from kafka import KafkaProducer
 
-
 def main():
     edges_count = 0
     topicName = "test"

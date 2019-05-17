@@ -11,3 +11,6 @@ CTestTestfile.cmake
 build
 libs
 kafka
+GPATH
+GRTAGS
+GTAGS
