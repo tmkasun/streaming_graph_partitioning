@@ -8,5 +8,5 @@ link_libraries('sqlite3')
 link_libraries('rdkafka')
 link_libraries('cppkafka')
 
-add_executable(knnectCPP main.cpp libs/headers/KafkaTest.h libs/KafkaTest.cpp)
+add_executable(knnectCPP main.cpp libs/headers/KafkaTest.h libs/KafkaTest.cpp libs/Partition.cpp)
 

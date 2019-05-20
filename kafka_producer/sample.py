@@ -10,7 +10,9 @@ def main():
             print("{} ===> {}".format(edges[0], edges[1]))
             producer.send(topicName, line.encode())
             edges_count += 1
-        print("Total edges = {} Submited to Kafka Topic name = {}".format(edges_count, topicName))
+            if edges_count >= 100: # temporaly for testing
+                break
+    print("Total edges = {} Submited to Kafka Topic name = {}".format(edges_count, topicName))
 
 
 if __name__ == "__main__":
