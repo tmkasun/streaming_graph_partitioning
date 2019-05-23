@@ -7,25 +7,17 @@
 
 using namespace std;
 
-template <typename Out>
-void split(const std::string &s, char delim, Out result) {
-    std::stringstream ss(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        *(result++) = item;
-    }
-}
-
-std::vector<std::string> split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
-    split(s, delim, std::back_inserter(elems));
-    return elems;
-}
-
 int main(int argc, char *argv[]) {
     clock_t start = clock();
     vector<Partition> partitions;
-    for (size_t i = 0; i < 4; i++) partitions.push_back(Partition(100));
+    int numberOfPartitions = 4;
+    long totalVertices = 0;
+    int *perPartitionCap;
+    for (size_t i = 0; i < numberOfPartitions; i++) {
+        Partition p(i,numberOfPartitions);
+        p.setMaxSize(perPartitionCap);
+        partitions.push_back(p);
+    };
 
     bool DEBUG = true;
     if (argc > 1 && *argv[1] == 'd') DEBUG = true;
@@ -58,14 +50,27 @@ int main(int argc, char *argv[]) {
         cout << "Offset = " << msg.get_offset() << endl;
         string data(msg.get_payload());
         cout << "Payload = " << data << endl;
-        std::vector<string> v = split(data, ' ');
-        cout << "Vertext 1 = " << stoi(v[0]) << endl;
-        cout << "Vertext 2 = " << stoi(v[1]) << endl;
-        partitions[1].addEdge({stoi(v[0]), stoi(v[1])});
-        cout << "Vertext count = " << partitions[1].vertextCount() << endl;
-        cout << "Edges count = " << partitions[1].edgesCount() << endl;
+        if (data == "-1") {  // Marks the end of stream
+            cout << " ***Received the end of stream" << endl;
+            break;
+        }
+        std::pair<int, int> edge = Partition::deserialize(data);
+        totalVertices += 2;
+        *perPartitionCap = totalVertices / numberOfPartitions;
+        
+        int firstIndex = edge.first % 4;
+        int secondIndex = edge.second % 4;
+
+        if (firstIndex == secondIndex) {
+            partitions[firstIndex].addEdge(edge);
+        } else {
+            partitions[firstIndex].addEdge(edge);
+            partitions[secondIndex].addEdge(edge);
+        }
     }
 
+    cout << "Vertext count = " << partitions[1].vertextCount() << endl;
+    cout << "Edges count = " << partitions[1].edgesCount() << endl;
     cout << "Time taken = " << 1000 * 1000 * (double)(clock() - start) / CLOCKS_PER_SEC << " micro seconds" << endl;
 }
 
