@@ -5,7 +5,7 @@ def main():
     edges_count = 0
     topicName = "test"
     producer = KafkaProducer(bootstrap_servers='localhost:9092')
-    with open("./data_sets/po.dl", 'r') as data_fd:
+    with open("/tmp/wso2/po.dl", 'r') as data_fd:
         for line in data_fd:
             edges = line.split(' ')
             print("{} ===> {}".format(edges[0], edges[1]))

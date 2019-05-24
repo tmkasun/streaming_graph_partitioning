@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
         cout << "Payload = " << data << endl;
         if (data == "-1") {  // Marks the end of stream
             cout << " ***Received the end of stream" << endl;
-            break;
+            continue;
         }
         std::pair<int, int> edge = Partition::deserialize(data);
         totalVertices += 2;
@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
         cout << id << " => Vertext count = " << partition.vertextCount() << endl;
         cout << id << " => Edges count = " << partition.edgesCount() << endl;
         cout << id << " => Edge cuts count = " << partition.edgeCutsCount() << endl;
+        cout << id << " => Cut ratio = " << partition.edgeCutsRatio() << endl;
         partition.printEdgeCuts();
         partition.printEdges();
         id++;

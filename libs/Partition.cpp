@@ -98,7 +98,9 @@ long Partition::edgeCutsCount() {
     return total;
 }
 
-float Partition::edgeCutsRatio() { return this->edgesCount() / this->edgeCutsCount(); }
+float Partition::edgeCutsRatio() {
+    return this->edgeCutsCount() / (this->edgesCount() + this->edgeCutsCount());
+    }
 
 void Partition::printEdgeCuts() {
     std::cout << "Printing edge cuts of " << id << " partition" << std::endl;
