@@ -77,13 +77,13 @@ std::pair<int, int> Partition::deserialize(std::string data) {
     return {stoi(v[0]), stoi(v[1])};
 }
 
-void Partition::addToEdgeCuts(long resident, long foreign, int partitionId) {
-    if (partitionId < this->edgeCuts.size()) {
+void Partition::addToEdgeCuts(int resident, int foreign, int partitionId) {
+    if (partitionId < this->numberOfPartitions) {
         auto exsistResidentVertiext = this->edgeCuts[partitionId].find(resident);
         if (exsistResidentVertiext != this->edgeCuts[partitionId].end()) {
             this->edgeCuts[partitionId][resident].insert(foreign);
         } else {
-            this->edgeCuts[partitionId][resident] = std::unordered_set<int>(foreign);
+            this->edgeCuts[partitionId][resident] = std::unordered_set<int>({foreign});
         }
     }
 }
@@ -99,3 +99,27 @@ long Partition::edgeCutsCount() {
 }
 
 float Partition::edgeCutsRatio() { return this->edgesCount() / this->edgeCutsCount(); }
+
+void Partition::printEdgeCuts() {
+    std::cout << "Printing edge cuts of " << id << " partition" << std::endl;
+    for (auto partition : this->edgeCuts) {
+        for (auto edgeList : partition) {
+            std::cout << edgeList.first << " ____" << std::endl;
+            for (int vertext : edgeList.second) {
+                std::cout << "\t| ---> " << vertext << std::endl;
+            }
+            std::cout << "\n" << std::endl;
+        }
+    }
+}
+
+void Partition::printEdges() {
+    std::cout << "Printing edge list of " << id << " partition" << std::endl;
+    for (auto edgeList : this->edgeList) {
+        std::cout << edgeList.first << " ____" << std::endl;
+        for (int vertext : edgeList.second) {
+            std::cout << "\t| ===> " << vertext << std::endl;
+        }
+        std::cout << "\n" << std::endl;
+    }
+}

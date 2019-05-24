@@ -12,9 +12,9 @@ int main(int argc, char *argv[]) {
     vector<Partition> partitions;
     int numberOfPartitions = 4;
     long totalVertices = 0;
-    int *perPartitionCap;
+    int *perPartitionCap = new int(totalVertices / numberOfPartitions);  // Remember to delete pointer
     for (size_t i = 0; i < numberOfPartitions; i++) {
-        Partition p(i,numberOfPartitions);
+        Partition p(i, numberOfPartitions);
         p.setMaxSize(perPartitionCap);
         partitions.push_back(p);
     };
@@ -57,20 +57,26 @@ int main(int argc, char *argv[]) {
         std::pair<int, int> edge = Partition::deserialize(data);
         totalVertices += 2;
         *perPartitionCap = totalVertices / numberOfPartitions;
-        
-        int firstIndex = edge.first % 4;
-        int secondIndex = edge.second % 4;
+
+        int firstIndex = edge.first % 4;    // Hash partitioning
+        int secondIndex = edge.second % 4;  // Hash partitioning
 
         if (firstIndex == secondIndex) {
             partitions[firstIndex].addEdge(edge);
         } else {
-            partitions[firstIndex].addEdge(edge);
-            partitions[secondIndex].addEdge(edge);
+            partitions[firstIndex].addToEdgeCuts(edge.first, edge.second, secondIndex);
+            partitions[secondIndex].addToEdgeCuts(edge.second, edge.first, firstIndex);
         }
     }
-
-    cout << "Vertext count = " << partitions[1].vertextCount() << endl;
-    cout << "Edges count = " << partitions[1].edgesCount() << endl;
+    int id = 0;
+    for (auto partition : partitions) {
+        cout << id << " => Vertext count = " << partition.vertextCount() << endl;
+        cout << id << " => Edges count = " << partition.edgesCount() << endl;
+        cout << id << " => Edge cuts count = " << partition.edgeCutsCount() << endl;
+        partition.printEdgeCuts();
+        partition.printEdges();
+        id++;
+    }
     cout << "Time taken = " << 1000 * 1000 * (double)(clock() - start) / CLOCKS_PER_SEC << " micro seconds" << endl;
 }
 

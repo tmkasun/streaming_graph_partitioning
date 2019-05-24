@@ -16,7 +16,15 @@ class Partition {
         - Insertions and lookups are interleaved; we don't have distinct insertion and lookup phases.
     */
     std::map<int, std::set<int>> edgeList;
-    std::vector<std::map<long, std::unordered_set<int>>> edgeCuts;
+    /**
+     * Edge cuts data structure
+     * [id]                    [id]                 ...       [id]
+     *  |                       |                              |
+     *  ↓                       ↓                              ↓
+     * {res->(foreign,..)} {res->(foreign,..) }     ...   {res->(foreign,..) }
+     * 
+     * **/
+    std::vector<std::map<int, std::unordered_set<int>>> edgeCuts;
     int id;
     int numberOfPartitions;  // Size of the cluster
     int *maxSize;            // Current maximum number of vertices that can be stored in this partition
@@ -34,7 +42,7 @@ class Partition {
     double partitionScore(int vertex);
     double edgesCount();
     double vertextCount();
-    void addToEdgeCuts(long resident, long foriegn, int partitionId);
+    void addToEdgeCuts(int resident, int foriegn, int partitionId);
     // maxSize is : Number of vertices that can be store in this partition, This is a dynamic shared pointer containing
     // a value depending on the whole graph size and # of partitions
     void setMaxSize(int *size) { this->maxSize = size; };
@@ -45,6 +53,8 @@ class Partition {
     static std::vector<std::string> _split(const std::string &s, char delim);
     static std::pair<int, int> deserialize(std::string data);
     long edgeCutsCount();
+    void printEdgeCuts();
+    void printEdges();
 };
 
 #endif
