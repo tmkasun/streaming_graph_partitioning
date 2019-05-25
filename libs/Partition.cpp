@@ -46,12 +46,6 @@ double Partition::edgesCount() {
 // denote the order of G.
 double Partition::vertextCount() { return this->edgeList.size(); }
 
-double Partition::partitionScore(int vertex) {
-    double fillRatio = vertextCount() / *(this->maxSize);
-    double neighbors = this->getNeighbors(vertex).size();
-    return neighbors - fillRatio;
-}
-
 template <typename Out>
 void Partition::_split(const std::string &s, char delim, Out result) {
     std::stringstream ss(s);
@@ -70,7 +64,7 @@ std::vector<std::string> Partition::_split(const std::string &s, char delim) {
 /**
  * Expect a space seperated pair of vertexts representing an edge in the graph.
  **/
-std::pair<int, int> Partition::deserialize(std::string data) {
+std::pair<long, long> Partition::deserialize(std::string data) {
     std::vector<std::string> v = Partition::_split(data, ' ');
     std::cout << "Vertext 1 = " << stoi(v[0]) << std::endl;
     std::cout << "Vertext 2 = " << stoi(v[1]) << std::endl;
@@ -98,9 +92,7 @@ long Partition::edgeCutsCount() {
     return total;
 }
 
-float Partition::edgeCutsRatio() {
-    return this->edgeCutsCount() / (this->edgesCount() + this->edgeCutsCount());
-    }
+float Partition::edgeCutsRatio() { return this->edgeCutsCount() / (this->edgesCount() + this->edgeCutsCount()); }
 
 void Partition::printEdgeCuts() {
     std::cout << "Printing edge cuts of " << id << " partition" << std::endl;
@@ -117,10 +109,15 @@ void Partition::printEdgeCuts() {
 
 void Partition::printEdges() {
     std::cout << "Printing edge list of " << id << " partition" << std::endl;
+    std::unordered_set<long> compositeVertextIDs;
     for (auto edgeList : this->edgeList) {
         std::cout << edgeList.first << " ____" << std::endl;
         for (int vertext : edgeList.second) {
-            std::cout << "\t| ===> " << vertext << std::endl;
+            long compositeVertextID = edgeList.first + vertext;
+            if (compositeVertextIDs.find(compositeVertextID) == compositeVertextIDs.end()) {
+                std::cout << "\t| ===> " << vertext << std::endl;
+                compositeVertextIDs.insert(edgeList.first + vertext);
+            }
         }
         std::cout << "\n" << std::endl;
     }

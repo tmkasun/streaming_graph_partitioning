@@ -3,21 +3,16 @@
 #include <iostream>
 
 #include "libs/Partition.h"
+#include "libs/Partitioner.h"
 #include "libs/headers/KafkaTest.h"
 
 using namespace std;
 
+void hashPartitioning(std::pair<int, int> &edge, std::vector<Partition> &partitions);
+
 int main(int argc, char *argv[]) {
     clock_t start = clock();
-    vector<Partition> partitions;
-    int numberOfPartitions = 4;
-    long totalVertices = 0;
-    int *perPartitionCap = new int(totalVertices / numberOfPartitions);  // Remember to delete pointer
-    for (size_t i = 0; i < numberOfPartitions; i++) {
-        Partition p(i, numberOfPartitions);
-        p.setMaxSize(perPartitionCap);
-        partitions.push_back(p);
-    };
+    Partitioner graphPartitioner(4);
 
     bool DEBUG = true;
     if (argc > 1 && *argv[1] == 'd') DEBUG = true;
@@ -52,34 +47,27 @@ int main(int argc, char *argv[]) {
         cout << "Payload = " << data << endl;
         if (data == "-1") {  // Marks the end of stream
             cout << " ***Received the end of stream" << endl;
-            continue;
+            break;
         }
-        std::pair<int, int> edge = Partition::deserialize(data);
-        totalVertices += 2;
-        *perPartitionCap = totalVertices / numberOfPartitions;
-
-        int firstIndex = edge.first % 4;    // Hash partitioning
-        int secondIndex = edge.second % 4;  // Hash partitioning
-
-        if (firstIndex == secondIndex) {
-            partitions[firstIndex].addEdge(edge);
-        } else {
-            partitions[firstIndex].addToEdgeCuts(edge.first, edge.second, secondIndex);
-            partitions[secondIndex].addToEdgeCuts(edge.second, edge.first, firstIndex);
-        }
+        std::pair<long, long> edge = Partition::deserialize(data);
+        graphPartitioner.addEdge(edge);
     }
-    int id = 0;
-    for (auto partition : partitions) {
-        cout << id << " => Vertext count = " << partition.vertextCount() << endl;
-        cout << id << " => Edges count = " << partition.edgesCount() << endl;
-        cout << id << " => Edge cuts count = " << partition.edgeCutsCount() << endl;
-        cout << id << " => Cut ratio = " << partition.edgeCutsRatio() << endl;
-        partition.printEdgeCuts();
-        partition.printEdges();
-        id++;
-    }
+    graphPartitioner.printStats();
+
     cout << "Time taken = " << 1000 * 1000 * (double)(clock() - start) / CLOCKS_PER_SEC << " micro seconds" << endl;
 }
+
+// void hashPartitioning(std::pair<int, int> &edge, std::vector<Partition> &partitions) {
+//     int firstIndex = edge.first % 4;    // Hash partitioning
+//     int secondIndex = edge.second % 4;  // Hash partitioning
+
+//     if (firstIndex == secondIndex) {
+//         partitions[firstIndex].addEdge(edge);
+//     } else {
+//         partitions[firstIndex].addToEdgeCuts(edge.first, edge.second, secondIndex);
+//         partitions[secondIndex].addToEdgeCuts(edge.second, edge.first, firstIndex);
+//     }
+// }
 
 // void fennel(const Graph &graph, int partitions_number, Partition *partition) {
 //     const double gamma = 3 / 2.0;

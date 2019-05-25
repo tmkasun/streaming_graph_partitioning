@@ -26,8 +26,7 @@ class Partition {
      * **/
     std::vector<std::map<int, std::unordered_set<int>>> edgeCuts;
     int id;
-    int numberOfPartitions;  // Size of the cluster
-    int *maxSize;            // Current maximum number of vertices that can be stored in this partition
+    int numberOfPartitions;  // Size of the cluster TODO: can be removed
 
    public:
     Partition(int id, int numberOfPartitions) {
@@ -43,15 +42,11 @@ class Partition {
     double edgesCount();
     double vertextCount();
     void addToEdgeCuts(int resident, int foriegn, int partitionId);
-    // maxSize is : Number of vertices that can be store in this partition, This is a dynamic shared pointer containing
-    // a value depending on the whole graph size and # of partitions
-    void setMaxSize(int *size) { this->maxSize = size; };
-    int getMaxSize() { return *(this->maxSize); };
     float edgeCutsRatio();
     template <typename Out>
     static void _split(const std::string &s, char delim, Out result);
     static std::vector<std::string> _split(const std::string &s, char delim);
-    static std::pair<int, int> deserialize(std::string data);
+    static std::pair<long, long> deserialize(std::string data);
     long edgeCutsCount();
     void printEdgeCuts();
     void printEdges();
