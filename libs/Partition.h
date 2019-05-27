@@ -46,7 +46,6 @@ class Partition {
     template <typename Out>
     static void _split(const std::string &s, char delim, Out result);
     static std::vector<std::string> _split(const std::string &s, char delim);
-    static std::pair<long, long> deserialize(std::string data);
     long edgeCutsCount();
     void printEdgeCuts();
     void printEdges();

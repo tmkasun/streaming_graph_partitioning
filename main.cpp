@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
             cout << " ***Received the end of stream" << endl;
             break;
         }
-        std::pair<long, long> edge = Partition::deserialize(data);
+        std::pair<long, long> edge = Partitioner::deserialize(data);
         graphPartitioner.addEdge(edge);
     }
     graphPartitioner.printStats();

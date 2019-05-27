@@ -49,6 +49,9 @@ void Partitioner::printStats() {
     }
 }
 
+/**
+ * |N(v) ∩ Si| ∂c(|Si|) 
+ **/
 void Partitioner::fennelPartitioning(std::pair<int, int> edge) {
     
     std::vector<long> partitionScoresFirst(numberOfPartitions, 0);  // Calculate per incoming edge
@@ -60,7 +63,7 @@ void Partitioner::fennelPartitioning(std::pair<int, int> edge) {
         long thisCostSecond, thisCostFirst = 0;
 
         long ngFirst = partition.getNeighbors(edge.first).size();
-        if (perPartitionCap != 0 && false) {
+        if (perPartitionCap != 0) {
             thisCostFirst = ngFirst - currentSize / (perPartitionCap);
         } else {
             thisCostFirst = ngFirst;
@@ -73,7 +76,7 @@ void Partitioner::fennelPartitioning(std::pair<int, int> edge) {
         partitionScoresFirst[id] = thisCostFirst;
 
         long ngSecond = partition.getNeighbors(edge.first).size();
-        if (perPartitionCap != 0 && false) {
+        if (perPartitionCap != 0) {
             thisCostSecond = ngSecond - currentSize / (perPartitionCap);
         } else {
             thisCostSecond = ngSecond;
@@ -96,4 +99,15 @@ void Partitioner::fennelPartitioning(std::pair<int, int> edge) {
         partitions[firstIndex].addToEdgeCuts(edge.first, edge.second, secondIndex);
         partitions[secondIndex].addToEdgeCuts(edge.second, edge.first, firstIndex);
     }
+}
+
+
+/**
+ * Expect a space seperated pair of vertexts representing an edge in the graph.
+ **/
+std::pair<long, long> Partitioner::deserialize(std::string data) {
+    std::vector<std::string> v = Partition::_split(data, ' ');
+    std::cout << "Vertext 1 = " << stoi(v[0]) << std::endl;
+    std::cout << "Vertext 2 = " << stoi(v[1]) << std::endl;
+    return {stoi(v[0]), stoi(v[1])};
 }

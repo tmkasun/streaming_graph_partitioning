@@ -61,16 +61,6 @@ std::vector<std::string> Partition::_split(const std::string &s, char delim) {
     return elems;
 }
 
-/**
- * Expect a space seperated pair of vertexts representing an edge in the graph.
- **/
-std::pair<long, long> Partition::deserialize(std::string data) {
-    std::vector<std::string> v = Partition::_split(data, ' ');
-    std::cout << "Vertext 1 = " << stoi(v[0]) << std::endl;
-    std::cout << "Vertext 2 = " << stoi(v[1]) << std::endl;
-    return {stoi(v[0]), stoi(v[1])};
-}
-
 void Partition::addToEdgeCuts(int resident, int foreign, int partitionId) {
     if (partitionId < this->numberOfPartitions) {
         auto exsistResidentVertiext = this->edgeCuts[partitionId].find(resident);
@@ -111,10 +101,14 @@ void Partition::printEdges() {
     std::cout << "Printing edge list of " << id << " partition" << std::endl;
     std::unordered_set<long> compositeVertextIDs;
     for (auto edgeList : this->edgeList) {
-        std::cout << edgeList.first << " ____" << std::endl;
+        bool isFirst = true;
         for (int vertext : edgeList.second) {
             long compositeVertextID = edgeList.first + vertext;
             if (compositeVertextIDs.find(compositeVertextID) == compositeVertextIDs.end()) {
+                if (isFirst) {
+                    std::cout << edgeList.first << " ____" << std::endl;
+                    isFirst = false;
+                }
                 std::cout << "\t| ===> " << vertext << std::endl;
                 compositeVertextIDs.insert(edgeList.first + vertext);
             }

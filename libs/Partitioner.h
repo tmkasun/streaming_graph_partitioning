@@ -25,6 +25,8 @@ class Partitioner {
     void hashPartitioning(std::pair<int, int> edge);
     void fennelPartitioning(std::pair<int, int> edge);
     void ldgPartitioning(std::pair<int, int> edge);
+    static std::pair<long, long> deserialize(std::string data);
+
 };
 
 #endif  // !JASMINE_PARTITIONER_HEADER
