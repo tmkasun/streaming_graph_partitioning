@@ -8,8 +8,6 @@
 
 using namespace std;
 
-void hashPartitioning(std::pair<int, int> &edge, std::vector<Partition> &partitions);
-
 int main(int argc, char *argv[]) {
     clock_t start = clock();
     Partitioner graphPartitioner(4);
@@ -57,18 +55,8 @@ int main(int argc, char *argv[]) {
     cout << "Time taken = " << 1000 * 1000 * (double)(clock() - start) / CLOCKS_PER_SEC << " micro seconds" << endl;
 }
 
-// void hashPartitioning(std::pair<int, int> &edge, std::vector<Partition> &partitions) {
-//     int firstIndex = edge.first % 4;    // Hash partitioning
-//     int secondIndex = edge.second % 4;  // Hash partitioning
 
-//     if (firstIndex == secondIndex) {
-//         partitions[firstIndex].addEdge(edge);
-//     } else {
-//         partitions[firstIndex].addToEdgeCuts(edge.first, edge.second, secondIndex);
-//         partitions[secondIndex].addToEdgeCuts(edge.second, edge.first, firstIndex);
-//     }
-// }
-
+//  c(x) = αx^γ
 // void fennel(const Graph &graph, int partitions_number, Partition *partition) {
 //     const double gamma = 3 / 2.0;
 //     const double alfa =
