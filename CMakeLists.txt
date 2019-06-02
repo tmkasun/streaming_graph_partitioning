@@ -7,6 +7,8 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -pthread")
 link_libraries('sqlite3')
 link_libraries('rdkafka')
 link_libraries('cppkafka')
+link_libraries('pthread')
+link_libraries('stdc++')
 
-add_executable(knnectCPP main.cpp libs/headers/KafkaTest.h libs/KafkaTest.cpp libs/Partition.cpp libs/Partitioner.cpp)
+add_executable(knnectCPP main.cpp libs/headers/KafkaTest.h libs/KafkaTest.cpp libs/Partition.cpp libs/Partitioner.cpp libs/transports/websocket/WebSocketServer.cpp)
 
