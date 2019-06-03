@@ -58,5 +58,6 @@ int main(int argc, char *argv[]) {
     }
     graphPartitioner.printStats();
     edgesWSServer.m_server.stop();
+    senderThread.join();
     cout << "Time taken = " << 1000 * 1000 * (double)(clock() - start) / CLOCKS_PER_SEC << " micro seconds" << endl;
 }

@@ -5,13 +5,14 @@
 
 #include "Partitioner.h"
 
-void Partitioner::addEdge(std::pair<long, long> edge) {
+partitionedEdge Partitioner::addEdge(std::pair<long, long> edge) {
+
     switch (this->algorithmInUse) {
         case Algorithms::HASH:
-            this->hashPartitioning(edge);
+            return this->hashPartitioning(edge);
             break;
         case Algorithms::FENNEL:
-            this->fennelPartitioning(edge);
+            return this->fennelPartitioning(edge);
             break;
         // case Algorithms::LDG:
         //     this->ldgPartitioning(edge);
@@ -21,7 +22,7 @@ void Partitioner::addEdge(std::pair<long, long> edge) {
     }
 }
 
-void Partitioner::hashPartitioning(std::pair<int, int> edge) {
+partitionedEdge Partitioner::hashPartitioning(std::pair<int, int> edge) {
     int firstIndex = edge.first % this->numberOfPartitions;    // Hash partitioning
     int secondIndex = edge.second % this->numberOfPartitions;  // Hash partitioning
 
@@ -31,6 +32,9 @@ void Partitioner::hashPartitioning(std::pair<int, int> edge) {
         this->partitions[firstIndex].addToEdgeCuts(edge.first, edge.second, secondIndex);
         this->partitions[secondIndex].addToEdgeCuts(edge.second, edge.first, firstIndex);
     }
+    return {
+        {edge.first, firstIndex}, { edge.second, secondIndex }
+    };
 }
 
 void Partitioner::printStats() {
@@ -58,7 +62,7 @@ and balancing of the partition sizes. Assign the vertext to partition P that max
  *   Total number of vertices and edges in the graph denoted as |V| = n and |E| = m.
  *   k is number of partitions
  **/
-void Partitioner::fennelPartitioning(std::pair<int, int> edge) {
+partitionedEdge Partitioner::fennelPartitioning(std::pair<int, int> edge) {
     std::vector<double> partitionScoresFirst(numberOfPartitions, 0);   // Calculate per incoming edge
     std::vector<double> partitionScoresSecond(numberOfPartitions, 0);  // Calculate per incoming edge
     const double gamma = 3 / 2.0;
@@ -77,8 +81,8 @@ void Partitioner::fennelPartitioning(std::pair<int, int> edge) {
         double secondVertextIntraCost;
         if (partition.isExist(edge.first) && partition.isExist(edge.second)) {
             partition.addEdge(edge);
-            this->totalEdges += 1; // TODO: Check whether edge already exist
-            return;
+            this->totalEdges += 1;  // TODO: Check whether edge already exist
+            return {{edge.first, id}, {edge.second, id}};
         }
         double firstVertextInterCost = firstVertextNeighbors.size();
         double secondVertextInterCost = secondVertextNeighbors.size();
@@ -87,9 +91,7 @@ void Partitioner::fennelPartitioning(std::pair<int, int> edge) {
             firstVertextIntraCost = alpha * (pow(partitionSize + 1, gamma) - pow(partitionSize, gamma));
         } else {
             if (firstVertextNeighbors.find(edge.second) != firstVertextNeighbors.end())
-                return;  // Nothing to do, edge already exisit
-            firstVertextAlreadyExist = true;
-            firstVertextIntraCost = 0;  // No cost of adding the vertext to this partition because it's already exist
+                return {{edge.first, id}, {edge.second, id}};  // Nothing to do, edge already exisit
         }
 
         partitionScoresFirst[id] = firstVertextInterCost - firstVertextIntraCost;
@@ -99,9 +101,10 @@ void Partitioner::fennelPartitioning(std::pair<int, int> edge) {
             secondVertextIntraCost = firstVertextIntraCost;
         } else {
             if (secondVertextNeighbors.find(edge.second) != secondVertextNeighbors.end())
-                return;  // Nothing to do, edge already exisit
-            secondVertextAlreadyExist = true;
-            secondVertextIntraCost = 0;  // No cost of adding the vertext this partition because it's already exist
+                return {{edge.first, id},
+                        {edge.second, id}};  // Nothing to do, edge already exisit, Because of the symmetrical nature of
+                                             // undirected edgelist implementation this is already checked when finding
+                                             // neighbors of the first edge above
         }
 
         partitionScoresSecond[id] = secondVertextInterCost - secondVertextIntraCost;
@@ -124,6 +127,9 @@ void Partitioner::fennelPartitioning(std::pair<int, int> edge) {
         partitions[secondIndex].addToEdgeCuts(edge.second, edge.first, firstIndex);
     }
     this->totalEdges += 1;
+    return {
+        {edge.first, firstIndex}, { edge.second, secondIndex }
+    };
 }
 
 /**

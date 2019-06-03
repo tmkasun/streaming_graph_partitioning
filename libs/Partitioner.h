@@ -3,6 +3,8 @@
 #include <vector>
 #include "./Partition.h"
 
+typedef std::vector<std::pair<long, long>> partitionedEdge;
+
 class Partitioner {
     std::vector<Partition> partitions;
     int numberOfPartitions;
@@ -21,9 +23,9 @@ class Partitioner {
     void printStats();
     long getTotalVertices();
     void setAlgorithm(std::string algo);
-    void addEdge(std::pair<long, long> edge);
-    void hashPartitioning(std::pair<int, int> edge);
-    void fennelPartitioning(std::pair<int, int> edge);
+    partitionedEdge addEdge(std::pair<long, long> edge);
+    partitionedEdge hashPartitioning(std::pair<int, int> edge);
+    partitionedEdge fennelPartitioning(std::pair<int, int> edge);
     void ldgPartitioning(std::pair<int, int> edge);
     static std::pair<long, long> deserialize(std::string data);
 

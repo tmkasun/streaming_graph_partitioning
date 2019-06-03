@@ -13,6 +13,7 @@ def fileFeed():
             print("{} ===> {}".format(edges[0], edges[1]))
             producer.send(topicName, line.encode())
             edges_count += 1
+            sleep(0.3)
             if edges_count == 200:
                 break
     print("Total edges = {} Submited to Kafka Topic name = {}".format(edges_count, topicName))
