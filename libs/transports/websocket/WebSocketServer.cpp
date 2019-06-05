@@ -19,6 +19,7 @@ sudo make install
 void BroadcastServer::run(uint16_t port) {
     m_server.listen(port);
     m_server.start_accept();
+    std::cout << "Start listning for web socket connections from " << port << std::endl;
     m_server.run();
 }
 

@@ -4,7 +4,7 @@ import StreamingGraph from './Graph.Backup'
 
 function App() {
   return (
-    <StreamingGraph/>
+    <StreamingGraph np={4}/>
   );
 }
 

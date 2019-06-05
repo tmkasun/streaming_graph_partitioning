@@ -6,7 +6,6 @@
 #include "Partitioner.h"
 
 partitionedEdge Partitioner::addEdge(std::pair<long, long> edge) {
-
     switch (this->algorithmInUse) {
         case Algorithms::HASH:
             return this->hashPartitioning(edge);
@@ -14,12 +13,77 @@ partitionedEdge Partitioner::addEdge(std::pair<long, long> edge) {
         case Algorithms::FENNEL:
             return this->fennelPartitioning(edge);
             break;
-        // case Algorithms::LDG:
-        //     this->ldgPartitioning(edge);
-        //     break;
+        case Algorithms::LDG:
+            return this->ldgPartitioning(edge);
+            break;
         default:
             break;
     }
+}
+/**
+ * Linear diterministic greedy algorithem by Stanton and Kilot et al
+ * equation for greedy assingment |N(v) ∩ Si| x (1 - |Si|/(n/k) )
+ *
+ * **/
+partitionedEdge Partitioner::ldgPartitioning(std::pair<int, int> edge) {
+    std::vector<double> partitionScoresFirst(numberOfPartitions, 0);   // Calculate per incoming edge
+    std::vector<double> partitionScoresSecond(numberOfPartitions, 0);  // Calculate per incoming edge
+    bool firstVertextAlreadyExist(false);
+    bool secondVertextAlreadyExist(false);
+
+    int id = 0;
+    for (auto partition : partitions) {
+        double partitionSize = partition.getVertextCount();
+        long thisCostSecond, thisCostFirst = 0;
+        std::set<int> firstVertextNeighbors = partition.getNeighbors(edge.first);
+        std::set<int> secondVertextNeighbors = partition.getNeighbors(edge.second);
+        double weightedGreedy =
+            (1 - (partitionSize / ((double)this->totalVertices / (double)this->numberOfPartitions)));
+
+        if (partition.isExist(edge.first) && partition.isExist(edge.second)) {
+            partition.addEdge(edge);
+            this->totalEdges += 1;  // TODO: Check whether edge already exist
+            return {{edge.first, id}, {edge.second, id}};
+        }
+        double firstVertextInterCost = firstVertextNeighbors.size();
+        if (firstVertextInterCost == 0) firstVertextInterCost = 1;
+        double secondVertextInterCost = secondVertextNeighbors.size();
+        if (secondVertextInterCost == 0) secondVertextInterCost = 1;
+
+        if (firstVertextNeighbors.size() != 0) {
+            if (firstVertextNeighbors.find(edge.second) != firstVertextNeighbors.end())
+                return {{edge.first, id}, {edge.second, id}};  // Nothing to do, edge already exisit
+        }
+
+        partitionScoresFirst[id] = firstVertextInterCost * weightedGreedy;
+
+        if (secondVertextNeighbors.size() != 0) {
+            if (secondVertextNeighbors.find(edge.second) != secondVertextNeighbors.end())
+                return {{edge.first, id},
+                        {edge.second, id}};  // Nothing to do, edge already exisit, Because of the symmetrical nature of
+                                             // undirected edgelist implementation this is already checked when finding
+                                             // neighbors of the first edge above
+        }
+
+        partitionScoresSecond[id] = secondVertextInterCost * weightedGreedy;
+        id++;
+    }
+    if (!firstVertextAlreadyExist) this->totalVertices += 1;
+    if (!secondVertextAlreadyExist) this->totalVertices += 1;
+
+    int firstIndex =
+        distance(partitionScoresFirst.begin(), max_element(partitionScoresFirst.begin(), partitionScoresFirst.end()));
+
+    int secondIndex = distance(partitionScoresSecond.begin(),
+                               max_element(partitionScoresSecond.begin(), partitionScoresSecond.end()));
+    if (firstIndex == secondIndex) {
+        partitions[firstIndex].addEdge(edge);
+    } else {
+        partitions[firstIndex].addToEdgeCuts(edge.first, edge.second, secondIndex);
+        partitions[secondIndex].addToEdgeCuts(edge.second, edge.first, firstIndex);
+    }
+    this->totalEdges += 1;
+    return {{edge.first, firstIndex}, {edge.second, secondIndex}};
 }
 
 partitionedEdge Partitioner::hashPartitioning(std::pair<int, int> edge) {
@@ -32,9 +96,7 @@ partitionedEdge Partitioner::hashPartitioning(std::pair<int, int> edge) {
         this->partitions[firstIndex].addToEdgeCuts(edge.first, edge.second, secondIndex);
         this->partitions[secondIndex].addToEdgeCuts(edge.second, edge.first, firstIndex);
     }
-    return {
-        {edge.first, firstIndex}, { edge.second, secondIndex }
-    };
+    return {{edge.first, firstIndex}, {edge.second, secondIndex}};
 }
 
 void Partitioner::printStats() {
@@ -44,8 +106,8 @@ void Partitioner::printStats() {
         std::cout << id << " => Edges count = " << partition.getEdgesCount() << std::endl;
         std::cout << id << " => Edge cuts count = " << partition.edgeCutsCount() << std::endl;
         std::cout << id << " => Cut ratio = " << partition.edgeCutsRatio() << std::endl;
-        partition.printEdgeCuts();
-        partition.printEdges();
+        // partition.printEdgeCuts();
+        // partition.printEdges();
         id++;
     }
 }
@@ -127,9 +189,7 @@ partitionedEdge Partitioner::fennelPartitioning(std::pair<int, int> edge) {
         partitions[secondIndex].addToEdgeCuts(edge.second, edge.first, firstIndex);
     }
     this->totalEdges += 1;
-    return {
-        {edge.first, firstIndex}, { edge.second, secondIndex }
-    };
+    return {{edge.first, firstIndex}, {edge.second, secondIndex}};
 }
 
 /**

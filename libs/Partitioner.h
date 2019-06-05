@@ -11,7 +11,7 @@ class Partitioner {
     long totalVertices = 0;
     long totalEdges = 0;
     enum Algorithms { HASH, FENNEL, LDG };
-    Algorithms algorithmInUse = Algorithms::FENNEL;
+    Algorithms algorithmInUse = Algorithms::LDG;
     // perPartitionCap is : Number of vertices that can be store in this partition, This is a dynamic shared pointer containing
     // a value depending on the whole graph size and # of partitions
 
@@ -26,7 +26,7 @@ class Partitioner {
     partitionedEdge addEdge(std::pair<long, long> edge);
     partitionedEdge hashPartitioning(std::pair<int, int> edge);
     partitionedEdge fennelPartitioning(std::pair<int, int> edge);
-    void ldgPartitioning(std::pair<int, int> edge);
+    partitionedEdge ldgPartitioning(std::pair<int, int> edge);
     static std::pair<long, long> deserialize(std::string data);
 
 };
