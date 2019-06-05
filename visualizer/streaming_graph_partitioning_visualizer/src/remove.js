@@ -1,78 +1,120 @@
-cytoscape({
-
+var cy = window.cy = cytoscape({
     container: document.getElementById('cy'),
 
-    elements: [ // flat array of nodes and edges
-        { // node n1
-            group: 'nodes', // 'nodes' for a node, 'edges' for an edge
-            // NB the group field can be automatically inferred for you but specifying it
-            // gives you nice debug messages if you mis-init elements
+    boxSelectionEnabled: false,
+    autounselectify: true,
 
-
-            data: { // element data (put json serialisable dev data here)
-                id: 'n1', // mandatory (string or number) id for each element, assigned automatically on undefined
-                parent: 'nparent', // indicates the compound node parent id; not defined => no parent
-                // (`parent` can be effectively changed by `eles.move()`)
-            },
-
-            // scratchpad data (usually temp or nonserialisable data)
-            scratch: {
-                _foo: 'bar' // app fields prefixed by underscore; extension fields unprefixed
-            },
-
-            position: { // the model position of the node (optional on init, mandatory after)
-                x: 100,
-                y: 100
-            },
-
-            selected: false, // whether the element is selected (default false)
-
-            selectable: true, // whether the selection state is mutable (default true)
-
-            locked: false, // when locked a node's position is immutable (default false)
-
-            grabbable: true, // whether the node can be grabbed and moved by the user
-
-            classes: ['foo', 'bar'] // an array (or a space separated string) of class names that the element has
-        },
-
-        { // node n2
-            data: { id: 'n2' },
-            renderedPosition: { x: 200, y: 200 } // can alternatively specify position in rendered on-screen pixels
-        },
-
-        { // node n3
-            data: { id: 'n3', parent: 'nparent' },
-            position: { x: 123, y: 234 }
-        },
-
-        { // node nparent
-            data: { id: 'nparent' }
-        },
-
-        { // edge e1
-            data: {
-                id: 'e1',
-                // inferred as an edge because `source` and `target` are specified:
-                source: 'n1', // the source node id (edge comes from this node)
-                target: 'n2'  // the target node id (edge goes to this node)
-                // (`source` and `target` can be effectively changed by `eles.move()`)
-            }
+    style: [{
+        selector: 'node',
+        css: {
+            'content': 'data(id)',
+            'text-valign': 'center',
+            'text-halign': 'center'
         }
+    },
+    {
+        selector: '$node > node',
+        css: {
+            'padding-top': '10px',
+            'padding-left': '10px',
+            'padding-bottom': '10px',
+            'padding-right': '10px',
+            'text-valign': 'top',
+            'text-halign': 'center',
+            'background-color': '#bbb'
+        }
+    },
+    {
+        selector: 'edge',
+        css: {
+            'curve-style': 'bezier',
+            'target-arrow-shape': 'triangle'
+        }
+    },
+    {
+        selector: ':parent',
+        css: {
+            'border-color': 'data(parentColor)',
+            'line-color': 'black',
+            'target-arrow-color': 'black',
+            'source-arrow-color': 'black'
+        }
+    }
     ],
 
-    layout: {
-        name: 'preset'
-    },
-
-    // so we can see the ids
-    style: [
+    elements: {
+        nodes: [{
+            data: {
+                id: 'a',
+                parent: 'b'
+            },
+            position: {
+                x: 215,
+                y: 85
+            }
+        },
         {
-            selector: 'node',
-            style: {
-                'label': 'data(id)'
+            data: {
+                id: 'b',
+                parentColor: 'blue'
+            }
+        },
+        {
+            data: {
+                id: 'c',
+                parent: 'b'
+            },
+            position: {
+                x: 300,
+                y: 85
+            }
+        },
+        {
+            data: {
+                id: 'd'
+            },
+            position: {
+                x: 215,
+                y: 175
+            }
+        },
+        {
+            data: {
+                id: 'e',
+                parentColor: 'red'
+            }
+        },
+        {
+            data: {
+                id: 'f',
+                parent: 'e'
+            },
+            position: {
+                x: 300,
+                y: 175
             }
         }
-    ]
+        ],
+        edges: [{
+            data: {
+                id: 'ad',
+                source: 'a',
+                target: 'd'
+            }
+        },
+        {
+            data: {
+                id: 'eb',
+                source: 'e',
+                target: 'b'
+            }
+        }
 
+        ]
+    },
+
+    layout: {
+        name: 'preset',
+        padding: 5
+    }
 });

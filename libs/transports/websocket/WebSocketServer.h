@@ -36,6 +36,7 @@ class BroadcastServer {
     void run(uint16_t port);
 
     void broadcast(std::string message);
+    void closeAll();
 };
 
 #endif // !SAMPLE_WEBSOCKET_SERVER

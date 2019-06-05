@@ -1,7 +1,7 @@
 #include <cppkafka/cppkafka.h>
 #include <time.h>
 #include <iostream>
-#include <thread> // FOr running websocket server parallelly
+#include <thread>  // FOr running websocket server parallelly
 
 #include "libs/Partition.h"
 #include "libs/Partitioner.h"
@@ -48,15 +48,18 @@ int main(int argc, char *argv[]) {
         cout << "Offset = " << msg.get_offset() << endl;
         string data(msg.get_payload());
         cout << "Payload = " << data << endl;
-        edgesWSServer.broadcast(data);
         if (data == "-1") {  // Marks the end of stream
             cout << " ***Received the end of stream" << endl;
             break;
         }
         std::pair<long, long> edge = Partitioner::deserialize(data);
-        graphPartitioner.addEdge(edge);
+        partitionedEdge pe = graphPartitioner.addEdge(edge);
+        std::string wsData = std::to_string(pe[0].first) + " " + std::to_string(pe[0].second) + " " +
+                             std::to_string(pe[1].first) + " " + std::to_string(pe[1].second);
+        edgesWSServer.broadcast(wsData);
     }
     graphPartitioner.printStats();
+    edgesWSServer.closeAll();
     edgesWSServer.m_server.stop();
     senderThread.join();
     cout << "Time taken = " << 1000 * 1000 * (double)(clock() - start) / CLOCKS_PER_SEC << " micro seconds" << endl;

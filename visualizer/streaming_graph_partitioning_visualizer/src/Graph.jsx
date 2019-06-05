@@ -23,7 +23,7 @@ const newConfigs = {
     "directed": false,
     "focusAnimationDuration": 0.75,
     "focusZoom": 1,
-    "height": 400,
+    "height": 1000,
     "highlightDegree": 1,
     "highlightOpacity": 0.2,
     "linkHighlightBehavior": true,
@@ -32,7 +32,7 @@ const newConfigs = {
     "nodeHighlightBehavior": true,
     "panAndZoom": false,
     "staticGraph": false,
-    "width": 800,
+    "width": '100%',
     "d3": {
         "alphaTarget": 0.05,
         "gravity": -100,

@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "cytoscape-cose-bilkent": "^4.0.0",
+    "cytoscape-markov-cluster": "git+https://github.com/cytoscape/cytoscape.js-markov-cluster.git",
     "cytoscape-spread": "^3.0.0",
     "d3": "^5.9.2",
     "react": "^16.8.6",

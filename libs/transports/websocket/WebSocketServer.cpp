@@ -27,3 +27,10 @@ void BroadcastServer::broadcast(std::string message) {
         m_server.send(it, message, websocketpp::frame::opcode::text);
     }
 }
+
+void BroadcastServer::closeAll() {
+    for (auto it : m_connections) {
+        m_server.pause_reading(it);
+        m_server.close(it,websocketpp::close::status::normal,"");
+    }
+}
