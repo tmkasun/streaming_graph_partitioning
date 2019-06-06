@@ -45,7 +45,7 @@ double Partition::getEdgesCount() {
 // The number of vertices, the cardinality of V, is called the order of graph and devoted by |V|. We usually use n to
 // denote the order of G.
 double Partition::getVertextCount() {
-    double edgeListVetices = this->edgeList.size() / 2.0;
+    double edgeListVetices = this->edgeList.size();
     double edgeCutVertices = 0;
     for (size_t i = 0; i < this->numberOfPartitions; i++) {
         for (auto edge : this->edgeCuts[i]) {
