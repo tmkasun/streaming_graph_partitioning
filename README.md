@@ -13,14 +13,29 @@ Partitioning algorithms are implemented in cpp+11 and visualization is done usin
 A python script is used for streaming edges from a graph in a file. It can also stream a graph by taking user inputs from the terminal.
 Practitioner accept the graph as a stream of edges , where edge contains a space separated vertex pair, i:e `22 45`
 
+## More on Streaming Graphs
+
+This was implemented as a part of adding new streaming graph partitioning algorithm to [Jasmine Graph server](https://github.com/miyurud/jasminegraph). You could try out Jasmine graph server for more robust work on graph partitioning and analysis.
+
+
 ## Algorithms
+
+### Implementation of Fennel
+
+I have used following maximization formulae for deriving the partition index for most optimum partitioning. The hubristic used in here is, if a vertex having more neighbors and have not reached to it's maximum capacity, Then it(Partition) will have most likelihood to accept that vertex.
+
+Inter partition cost
 
 ![CodeCogsEqn](https://user-images.githubusercontent.com/3313885/58380863-5eb18f80-7fd4-11e9-9214-3136c6275559.png)
 
+<!---
 \left |N(v)\cap {S_i}  \right | - {\partial c}(\left | {S_i}  \right |)
 https://www.codecogs.com/latex/eqneditor.php
 
 {\partial c}(\left | {S_i}  \right |) = {\alpha}rx^{r-1}
+-->
+
+Intra partition cost
 
 ![CodeCogsEqn (1)](https://user-images.githubusercontent.com/3313885/58380913-3b3b1480-7fd5-11e9-9b50-5eea3d9e78d3.png)
 
