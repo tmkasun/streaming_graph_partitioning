@@ -11,7 +11,7 @@ class Partitioner {
     long totalVertices = 0;
     long totalEdges = 0;
     enum Algorithms { HASH, FENNEL, LDG };
-    Algorithms algorithmInUse = Algorithms::HASH;
+    Algorithms algorithmInUse = Algorithms::FENNEL;
     // perPartitionCap is : Number of vertices that can be store in this partition, This is a dynamic shared pointer containing
     // a value depending on the whole graph size and # of partitions
 

@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     clock_t start = clock();
     Partitioner graphPartitioner(4);
     bool DEBUG = true;
-    bool WEBSOCKET = false;
+    bool WEBSOCKET = true;
     BroadcastServer edgesWSServer;
     std::thread senderThread;
     if (WEBSOCKET) {
