@@ -1,6 +1,7 @@
 from kafka import KafkaProducer
 from time import sleep
 import sys
+import socket
 
 topicName = "test"
 producer = KafkaProducer(bootstrap_servers='localhost:9092')
@@ -13,9 +14,9 @@ def fileFeed():
             print("{} ===> {}".format(edges[0], edges[1]))
             producer.send(topicName, line.encode())
             edges_count += 1
-            sleep(0.3)
-            if edges_count == 2000:
-                break
+            # sleep(0.3)
+            # if edges_count == 200:
+            #     break
     print("Total edges = {} Submited to Kafka Topic name = {}".format(edges_count, topicName))
 
 def rawInputs():
@@ -29,7 +30,19 @@ def rawInputs():
         userIn = input("Enter edge pair:")
     print("Total edges = {} Submited to Kafka Topic name = {}".format(edges_count, topicName))
 
+def initJasmineStream():
+    sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    server_connection = ('localhost', 7777)
+    sock.connect(server_connection)
+    sock.sendall(b'adstrmk')
+    data = ""
+    while data.find("\r\n") < 0:
+        bdata = sock.recv(16)
+        data += bdata.decode()
+    sock.sendall(topicName.encode())
+
 def main():
+    initJasmineStream()
     try:
         feederType = sys.argv[1]
     except IndexError:

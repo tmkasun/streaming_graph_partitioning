@@ -6,7 +6,9 @@
 #include "libs/Partition.h"
 #include "libs/Partitioner.h"
 #include "libs/headers/KafkaTest.h"
+#ifdef ENABLEWS
 #include "libs/transports/websocket/WebSocketServer.h"
+#endif  // ENABLEWS
 
 using namespace std;
 
@@ -14,13 +16,12 @@ int main(int argc, char *argv[]) {
     clock_t start = clock();
     Partitioner graphPartitioner(4);
     bool DEBUG = true;
-    bool WEBSOCKET = true;
+#ifdef ENABLEWS
     BroadcastServer edgesWSServer;
     std::thread senderThread;
-    if (WEBSOCKET) {
-        uint16_t websocketPort = 9002;
-        senderThread = std::thread(std::bind(&BroadcastServer::run, &edgesWSServer, websocketPort));
-    }
+    uint16_t websocketPort = 9002;
+    senderThread = std::thread(std::bind(&BroadcastServer::run, &edgesWSServer, websocketPort));
+#endif  // ENABLEWS
 
     if (argc > 1 && *argv[1] == 'd') DEBUG = true;
     cppkafka::Configuration configs = {{"metadata.broker.list", "127.0.0.1:9092"}, {"group.id", "knnect"}};
@@ -61,13 +62,16 @@ int main(int argc, char *argv[]) {
         std::string wsData = std::to_string(pe[0].first) + " " + std::to_string(pe[0].second) + " " +
                              std::to_string(pe[1].first) + " " + std::to_string(pe[1].second);
 
-        if (WEBSOCKET) edgesWSServer.broadcast(wsData);
+#ifdef ENABLEWS
+        edgesWSServer.broadcast(wsData);
+#endif
     }
     graphPartitioner.printStats();
-    if (WEBSOCKET) {
-        edgesWSServer.closeAll();
-        edgesWSServer.m_server.stop();
-        senderThread.join();
-    }
+#ifdef ENABLEWS
+    edgesWSServer.closeAll();
+    edgesWSServer.m_server.stop();
+    senderThread.join();
+#endif
+
     cout << "Time taken = " << 1000 * 1000 * (double)(clock() - start) / CLOCKS_PER_SEC << " micro seconds" << endl;
 }
