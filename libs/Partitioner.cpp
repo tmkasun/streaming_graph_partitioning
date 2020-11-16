@@ -1,9 +1,9 @@
+#include "Partitioner.h"
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <vector>
-
-#include "Partitioner.h"
 
 partitionedEdge Partitioner::addEdge(std::pair<long, long> edge) {
     switch (this->algorithmInUse) {
@@ -19,10 +19,11 @@ partitionedEdge Partitioner::addEdge(std::pair<long, long> edge) {
         default:
             break;
     }
+    return this->hashPartitioning(edge);
 }
 /**
- * Linear diterministic greedy algorithem by Stanton and Kilot et al
- * equation for greedy assingment |N(v) ∩ Si| x (1 - |Si|/(n/k) )
+ * Linear deterministic greedy algorithem by Stanton and Kilot et al
+ * equation for greedy assignment |N(v) ∩ Si| x (1 - |Si|/(n/k) )
  *
  * **/
 partitionedEdge Partitioner::ldgPartitioning(std::pair<int, int> edge) {

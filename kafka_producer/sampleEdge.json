@@ -1,0 +1,17 @@
+{
+    "source": {
+        "id": "156151",
+        "properties": {
+            "label": "sample_label"
+        }
+    },
+    "destination": {
+        "id": "156151",
+        "properties": {
+            "label": "sample_label destination"
+        }
+    },
+    "properties": {
+        "isDirected": true
+    }
+}

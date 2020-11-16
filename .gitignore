@@ -14,3 +14,6 @@ GPATH
 GRTAGS
 GTAGS
 data_sets
+libs/external/
+logs/
+streamStore/

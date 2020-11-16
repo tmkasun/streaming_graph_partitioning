@@ -1,0 +1,138 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "http://me.knnect.com/root.json",
+    "type": "object",
+    "title": "The relation data schema",
+    "description": "The relation data is the schema that comprises JSON document structure for streaming graph server input data structure",
+    "default": {},
+    "required": [
+        "source",
+        "destination"
+    ],
+    "properties": {
+        "source": {
+            "$id": "#/properties/source",
+            "type": "object",
+            "title": "Source in the relationship",
+            "description": "Source ID and it's properties in the relationship",
+            "default": "",
+            "examples": [
+                {
+                    "id": "1235",
+                    "properties": {
+                        "label": "Kasun Thennakoon",
+                        "features": "453132"
+                    }
+                }
+            ],
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "$id": "#/properties/node",
+                    "type": "string",
+                    "title": "The node ID",
+                    "description": "An identifier string for the Source node",
+                    "default": "",
+                    "examples": [
+                        "123545",
+                        "tmkasun",
+                        "sample@email.com"
+                    ]
+                },
+                "properties": {
+                    "$id": "#/properties/node/properties",
+                    "type": "object",
+                    "title": "Source node properties object",
+                    "description": "Unrestricted and optional string key value properties object",
+                    "default": {},
+                    "examples": [
+                        {
+                            "label": "sample label",
+                            "name": "Kasun",
+                            "age": "30",
+                            "email": "tmkasun@live.com"
+                        }
+                    ]
+                }
+            }
+        },
+        "destination": {
+            "$id": "#/properties/destination",
+            "type": "object",
+            "title": "Destination in the relationship",
+            "description": "Destination ID and it's properties in the relationship",
+            "default": "",
+            "examples": [
+                {
+                    "id": "1239",
+                    "properties": {
+                        "label": "Bandara Thennakoon",
+                        "features": "453332"
+                    }
+                }
+            ],
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "$id": "#/properties/node",
+                    "type": "string",
+                    "title": "The node ID",
+                    "description": "An identifier string for the Source node",
+                    "default": "",
+                    "examples": [
+                        "123545",
+                        "tmkasun",
+                        "sample@email.com"
+                    ]
+                },
+                "properties": {
+                    "$id": "#/properties/node/properties",
+                    "type": "object",
+                    "title": "Source node properties object",
+                    "description": "Unrestricted and optional string key value properties object",
+                    "default": {},
+                    "examples": [
+                        {
+                            "label": "sample label",
+                            "name": "Kasun",
+                            "age": "30",
+                            "email": "tmkasun@live.com"
+                        }
+                    ]
+                }
+            }
+        },
+        "properties": {
+            "$id": "#/properties/relation/properties",
+            "type": "object",
+            "title": "Relation properties object",
+            "description": "Unrestricted and optional string key value properties object for the relation\n`isDirected` is an optional property but internally recognized to derive the relation direction",
+            "default": {},
+            "examples": [
+                {
+                    "isDirected": "false",
+                    "duration": "1234564",
+                    "weight": "30",
+                    "type": "friends"
+                }
+            ],
+            "properties": {
+                "isDirected": {
+                    "$id": "#/properties/relation/properties/direction",
+                    "type": "boolean",
+                    "title": "Direction info of the relation",
+                    "description": "Whether the relation is directed or un directed",
+                    "default": false,
+                    "examples": [
+                        true,
+                        false
+                    ]
+                }
+            }
+        }
+    }
+}
