@@ -57,7 +57,7 @@ class GraphEndpoint {
         json veticesArray = json::array();
         json propertiesJson;
         for (auto it = vetices.begin(); it != vetices.end(); it++) {
-            veticesArray.push_back(it->id);
+            veticesArray.push_back(nodeToJson(*it));
         }
         auto mime = Http::Mime::MediaType::fromString("application/json");
         response.send(Http::Code::Ok, veticesArray.dump(), mime);
@@ -72,22 +72,27 @@ class GraphEndpoint {
         if (!vertext) {
             response.send(Http::Code::Not_Found, "Vertext does not exist");
         } else {
-            auto edges = vertext->getEdges();
-            auto properties = vertext->getAllProperties();
-            json edgesArray = json::array();
-            json propertiesJson;
-            for (auto it = edges.begin(); it != edges.end(); it++) {
-                edgesArray.push_back(it->id);
-            }
-            for (auto it = properties.begin(); it != properties.end(); it++) {
-                propertiesJson[it->first] = it->second;
-            }
-            json payload = {{"id", vertext->getLabel()},
-                            {"properties", {"edges", edgesArray}, {"nodeProps", propertiesJson}}};
-
+            json payload = nodeToJson(*vertext);
             auto mime = Http::Mime::MediaType::fromString("application/json");
             response.send(Http::Code::Ok, payload.dump(), mime);
         }
+    }
+
+    json nodeToJson(NodeBlock vertext) {
+        auto edges = vertext.getEdges();
+        auto properties = vertext.getAllProperties();
+        json edgesArray = json::array();
+        json propertiesJson;
+        for (auto it = edges.begin(); it != edges.end(); it++) {
+            edgesArray.push_back(it->id);
+        }
+        for (auto it = properties.begin(); it != properties.end(); it++) {
+            propertiesJson[it->first] = it->second;
+        }
+        json payload = json::object({});
+        payload["id"] = vertext.id;
+        payload["properties"] = json::object({{"edges", edgesArray}, {"nodeProps", propertiesJson}});
+        return payload;
     }
 
     using Lock = std::mutex;

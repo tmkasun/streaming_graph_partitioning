@@ -1,5 +1,5 @@
 /**
-Copyright 2020 JasminGraph Team
+Copyright 2020 JasmineGraph Team
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -15,50 +15,65 @@ limitations under the License.
 
 #include <sys/stat.h>
 
+#include <exception>
+
 #include "../../util/logger/Logger.h"
 #include "NodeBlock.h"  // To setup node DB
 #include "PropertyLink.h"
 #include "RelationBlock.h"
+#include "iostream"
 
 Logger node_manager_logger;
 
-NodeManager::NodeManager(std::string mode) {
+NodeManager::NodeManager(GraphConfig gConfig) {
+    this->graphID = gConfig.graphID;
+    this->partitionID = gConfig.partitionID;
+
+    std::string graphPrefix = "databases/g" + std::to_string(graphID);
+    std::string dbPrefix = graphPrefix + "_p" + std::to_string(partitionID);
+
+    this->index_db_loc = dbPrefix + "_nodes.index.db";
+
+    if (gConfig.maxLabelSize) {
+        setIndexKeySize(gConfig.maxLabelSize);
+    }
     std::ios_base::openmode openMode = std::ios::trunc;  // default is Trunc mode which overrides the entire file
-    if (mode == "app") {
+    if (gConfig.openMode == NodeManager::FILE_MODE) {
         openMode = std::ios::app;  // if app, open in append mode
         this->nodeIndex = readNodeIndex();
     }
     NodeBlock::nodesDB =
-        new std::fstream(NodeManager::NODE_DB_PATH, std::ios::in | std::ios::out | openMode | std::ios::binary);
+        new std::fstream(dbPrefix + "_nodes.db", std::ios::in | std::ios::out | openMode | std::ios::binary);
     PropertyLink::propertiesDB =
-        new std::fstream(PropertyLink::DB_PATH, std::ios::in | std::ios::out | openMode | std::ios::binary);
+        new std::fstream(dbPrefix + "_properties.db", std::ios::in | std::ios::out | openMode | std::ios::binary);
     RelationBlock::relationsDB =
-        new std::fstream(RelationBlock::DB_PATH, std::ios::in | std::ios::out | openMode | std::ios::binary);
+        new std::fstream(dbPrefix + "_relations.db", std::ios::in | std::ios::out | openMode | std::ios::binary);
     // TODO (tmkasun): set PropertyLink nextPropertyIndex after validating by modulus check from file number of bytes
 
     if (dbSize(NodeManager::NODE_DB_PATH) % NodeBlock::BLOCK_SIZE != 0) {
-        node_manager_logger.error("Node DB size does not complies to node block size Path = " +
-                                  NodeManager::NODE_DB_PATH);
+        std::string errorMessage =
+            "Node DB size does not comply to node block size Path = " + NodeManager::NODE_DB_PATH;
+        node_manager_logger.error(errorMessage);
+        throw std::runtime_error(errorMessage);
     }
 }
 
 std::unordered_map<std::string, unsigned int> NodeManager::readNodeIndex() {
     std::ifstream index_db(this->index_db_loc, std::ios::app | std::ios::binary);
-    std::unordered_map<std::string, unsigned int> _nodeIndex;  // temproy node index data holder
+    std::unordered_map<std::string, unsigned int> _nodeIndex;  // temporary node index data holder
 
     if (index_db.is_open()) {
         int iSize = dbSize(this->index_db_loc);
         unsigned long dataWidth = NodeManager::INDEX_KEY_SIZE + sizeof(unsigned int);
         if (iSize % dataWidth != 0) {
-            node_manager_logger.error("Index DB size does not complies to index block size Path = " +
-                                      this->index_db_loc);
+            node_manager_logger.error("Index DB size does not comply to index block size Path = " + this->index_db_loc);
             throw std::runtime_error("Node index DB in " + this->index_db_loc + " is corrupted!");
         }
 
         char nodeIDC[NodeManager::INDEX_KEY_SIZE];
         unsigned int nodeIndexId;
         for (size_t i = 0; i < iSize / dataWidth; i++) {
-            nodeIDC[NodeManager::INDEX_KEY_SIZE] = {0};  // Fill with null chars before puting data
+            nodeIDC[NodeManager::INDEX_KEY_SIZE] = {0};  // Fill with null chars before putting data
             if (!index_db.read(&nodeIDC[0], NodeManager::INDEX_KEY_SIZE)) {
                 node_manager_logger.error("Error while reading index key data from block i = " + std::to_string(i));
             }
@@ -68,14 +83,16 @@ std::unordered_map<std::string, unsigned int> NodeManager::readNodeIndex() {
             _nodeIndex[std::string(nodeIDC)] = nodeIndexId;
         }
     } else {
-        node_manager_logger.error("Error while opening the node index DB");
+        std::string errorMessage = "Error while opening the node index DB";
+        node_manager_logger.error(errorMessage);
+        throw std::runtime_error(errorMessage);
     }
 
     index_db.close();
     return _nodeIndex;
 }
 
-unsigned int NodeManager::addRelation(NodeBlock source, NodeBlock destination) {
+RelationBlock *NodeManager::addRelation(NodeBlock source, NodeBlock destination) {
     RelationBlock *newRelation = NULL;
     if (source.edgeRef == 0 || destination.edgeRef == 0 ||
         !source.searchRelation(destination)) {  // certainly a new relation block needed
@@ -84,21 +101,21 @@ unsigned int NodeManager::addRelation(NodeBlock source, NodeBlock destination) {
             source.updateRelation(newRelation);
             destination.updateRelation(newRelation);
         } else {
-            node_manager_logger.error("Something went wrong while adding the new edge/relation source = " +
+            node_manager_logger.error("Error while adding the new edge/relation for source = " +
                                       std::string(source.id) + " destination = " + std::string(destination.id));
         }
-
     } else {
+        // TODO[tmkasun]: implement get edge support and return existing edge/relation if already exist
         node_manager_logger.warn("Relation/Edge already exist for source = " + std::string(source.id) +
                                  " destination = " + std::string(destination.id));
     }
-    return 0;
+    return newRelation;
 }
 
 NodeBlock *NodeManager::addNode(std::string nodeId) {
     unsigned int assignedNodeIndex;
     if (this->nodeIndex.find(nodeId) == this->nodeIndex.end()) {
-        node_manager_logger.debug("NodeId not found in index for node ID " + nodeId);
+        node_manager_logger.debug("Can't find NodeId (" + nodeId + ") in the index database");
         NodeBlock *sourceBlk = new NodeBlock(nodeId, this->nextNodeIndex * NodeBlock::BLOCK_SIZE);
         this->nodeIndex.insert({nodeId, this->nextNodeIndex});
         assignedNodeIndex = this->nextNodeIndex;
@@ -111,23 +128,24 @@ NodeBlock *NodeManager::addNode(std::string nodeId) {
     }
 }
 
-std::pair<NodeBlock, NodeBlock> NodeManager::addEdge(std::pair<std::string, std::string> edge) {
+RelationBlock *NodeManager::addEdge(std::pair<std::string, std::string> edge) {
     NodeBlock *sourceNode = this->addNode(edge.first);
     NodeBlock *destNode = this->addNode(edge.second);
-    unsigned int relationAddr = this->addRelation(*sourceNode, *destNode);
+    RelationBlock *newRelation = this->addRelation(*sourceNode, *destNode);
+    if (newRelation) {
+        newRelation->setDestination(destNode);
+        newRelation->setSource(sourceNode);
+    }
 
     node_manager_logger.debug("DEBUG: Source DB block address " + std::to_string(sourceNode->addr) +
                               " Destination DB block address " + std::to_string(destNode->addr));
-    std::pair<NodeBlock, NodeBlock> returnVal = {*sourceNode, *destNode};
-    delete sourceNode;
-    delete destNode;
-    return returnVal;
+    return newRelation;
 }
 
 int NodeManager::dbSize(std::string path) {
     /*
         The structure stat contains at least the following members:
-        st_dev     ID of device containing file
+        st_dev     ID of the device containing file
         st_ino     file serial number
         st_mode    mode of file (see below)
         st_nlink   number of links to the file
@@ -159,7 +177,6 @@ int NodeManager::dbSize(std::string path) {
  **/
 NodeBlock *NodeManager::get(std::string nodeId) {
     NodeBlock *nodeBlockPointer = NULL;
-    int debug = std::stoi(nodeId);
     if (this->nodeIndex.find(nodeId) == this->nodeIndex.end()) {  // Not found
         return nodeBlockPointer;
     }
@@ -169,7 +186,7 @@ NodeBlock *NodeManager::get(std::string nodeId) {
     unsigned int edgeRef;
     unsigned int propRef;
     char usageBlock;
-    char label[6];
+    char label[NodeBlock::LABEL_SIZE];
 
     if (!NodeBlock::nodesDB->get(usageBlock)) {
         node_manager_logger.error("Error while reading usage data from block " + std::to_string(blockAddress));
@@ -183,7 +200,7 @@ NodeBlock *NodeManager::get(std::string nodeId) {
         node_manager_logger.error("Error while reading prop reference data from block " + std::to_string(blockAddress));
     }
 
-    if (!NodeBlock::nodesDB->read(&label[0], 6)) {
+    if (!NodeBlock::nodesDB->read(&label[0], NodeBlock::LABEL_SIZE)) {
         node_manager_logger.error("Error while reading label data from block " + std::to_string(blockAddress));
     }
     bool usage = usageBlock == '\1';
@@ -193,7 +210,7 @@ NodeBlock *NodeManager::get(std::string nodeId) {
 
     nodeBlockPointer = new NodeBlock(nodeId, blockAddress, propRef, edgeRef, label, usage);
 
-    node_manager_logger.debug("DEBUG: nodeBlockPointer after creating the object edgeRef" +
+    node_manager_logger.debug("DEBUG: nodeBlockPointer after creating the object edgeRef " +
                               std::to_string(nodeBlockPointer->edgeRef));
 
     if (nodeBlockPointer->edgeRef % RelationBlock::BLOCK_SIZE != 0) {
@@ -205,6 +222,12 @@ NodeBlock *NodeManager::get(std::string nodeId) {
 void NodeManager::persistNodeIndex() {
     std::ofstream index_db(this->index_db_loc, std::ios::trunc | std::ios::binary);
     if (index_db.is_open()) {
+        if (this->nodeIndex.size() > 0 && (this->nodeIndex.begin()->first.length() > NodeManager::INDEX_KEY_SIZE)) {
+            node_manager_logger.error("Node label/ID is longer ( " +
+                                      std::to_string(this->nodeIndex.begin()->first.length()) +
+                                      " ) than the index key size " + std::to_string(NodeManager::INDEX_KEY_SIZE));
+            throw "Node label/ID is longer than the index key size!";
+        }
         for (auto nodeMap : this->nodeIndex) {
             char nodeIDC[NodeManager::INDEX_KEY_SIZE] = {0};  // Initialize with null chars
             std::strcpy(nodeIDC, nodeMap.first.c_str());
@@ -227,7 +250,7 @@ std::list<NodeBlock> NodeManager::getGraph(int limit) {
     std::list<NodeBlock> vertices;
     for (auto it : this->nodeIndex) {
         i++;
-        if (i >= limit) {
+        if (i > limit) {
             break;
         }
         auto nodeId = it.first;
@@ -237,6 +260,12 @@ std::list<NodeBlock> NodeManager::getGraph(int limit) {
     return vertices;
 }
 
+/**
+ *
+ * When closing the node manager,
+ * It closes all the open databases and persist the node index in-memory hash map to node index database
+ *
+ * **/
 void NodeManager::close() {
     this->persistNodeIndex();
     if (PropertyLink::propertiesDB) {
@@ -247,8 +276,26 @@ void NodeManager::close() {
         NodeBlock::nodesDB->flush();
         NodeBlock::nodesDB->close();
     }
+    if (RelationBlock::relationsDB) {
+        RelationBlock::relationsDB->flush();
+        RelationBlock::relationsDB->close();
+    }
 }
 
-const unsigned long NodeManager::INDEX_KEY_SIZE = 8;
+/**
+ *
+ * Set the size of node index key size at the run time.
+ * By default Node/Vertext ID or the label is used as the key in the node index database, which act as a lookup table
+ * for node IDs to their block address in node DB
+ *
+ * */
+void NodeManager::setIndexKeySize(unsigned long newIndexKeySize) {
+    if (NodeBlock::LABEL_SIZE > newIndexKeySize) {
+        node_manager_logger.warn("Node/Vertext ID or label is larger than the index key size!!");
+    }
+
+    this->INDEX_KEY_SIZE = newIndexKeySize;
+}
 unsigned int NodeManager::nextPropertyIndex = 0;
-std::string NodeManager::NODE_DB_PATH = "streamStore/nodes.db";
+std::string NodeManager::NODE_DB_PATH = "streamStore/g{}_p{}.db";
+const std::string NodeManager::FILE_MODE = "app";  // for appending to existing DB

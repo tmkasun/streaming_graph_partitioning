@@ -8,6 +8,8 @@ class KafkaTest
   public:
     cppkafka::Consumer consumer;
     KafkaTest(cppkafka::Configuration configs) : consumer(configs) { _configs = configs; };
+    KafkaTest();
+    ~KafkaTest(){};
     void Subscribe(std::string topic);
 
   private:

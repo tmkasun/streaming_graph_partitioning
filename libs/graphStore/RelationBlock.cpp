@@ -1,5 +1,5 @@
 /**
-Copyright 2020 JasminGraph Team
+Copyright 2020 JasmineGraph Team
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -13,7 +13,6 @@ limitations under the License.
 
 #include "RelationBlock.h"
 
-#include <iostream>
 #include <sstream>
 #include <vector>
 
@@ -233,7 +232,7 @@ RelationBlock* RelationBlock::nextDestination() { return RelationBlock::get(this
 RelationBlock* RelationBlock::previousDestination() { return RelationBlock::get(this->destination.preRelationId); }
 
 bool RelationBlock::setNextSource(unsigned int newAddress) {
-    if (this->updateRelationRecords(2, newAddress)) {
+    if (this->updateRelationRecords(RelationOffsets::SOURCE_NEXT, newAddress)) {
         this->source.nextRelationId = newAddress;
     } else {
         throw "Exception: Error while updating the relation next source address " + std::to_string(newAddress);
@@ -242,9 +241,8 @@ bool RelationBlock::setNextSource(unsigned int newAddress) {
 }
 
 bool RelationBlock::setPreviousSource(unsigned int newAddress) {
-    if (this->updateRelationRecords(4, newAddress)) {
+    if (this->updateRelationRecords(RelationOffsets::SOURCE_PREVIOUS, newAddress)) {
         this->source.preRelationId = newAddress;
-
     } else {
         throw "Exception: Error while updating the relation previous source address " + std::to_string(newAddress);
     }
@@ -252,7 +250,7 @@ bool RelationBlock::setPreviousSource(unsigned int newAddress) {
 }
 
 bool RelationBlock::setNextDestination(unsigned int newAddress) {
-    if (this->updateRelationRecords(6, newAddress)) {
+    if (this->updateRelationRecords(RelationOffsets::DESTINATION_NEXT, newAddress)) {
         this->destination.nextRelationId = newAddress;
     } else {
         throw "Exception: Error while updating the relation next destination address " + std::to_string(newAddress);
@@ -261,7 +259,7 @@ bool RelationBlock::setNextDestination(unsigned int newAddress) {
 }
 
 bool RelationBlock::setPreviousDestination(unsigned int newAddress) {
-    if (this->updateRelationRecords(8, newAddress)) {
+    if (this->updateRelationRecords(RelationOffsets::DESTINATION_PREVIOUS, newAddress)) {
         this->destination.preRelationId = newAddress;
     } else {
         throw "Exception: Error while updating the relation previous destination address " + std::to_string(newAddress);
@@ -270,21 +268,25 @@ bool RelationBlock::setPreviousDestination(unsigned int newAddress) {
 }
 
 /**
- * Update relation record block given the offset to the recored from the begining, i:e 
- *  recordOffset 0 --> Source address 
- *  recordOffset 1 --> Source address 
- *  recordOffset 2 --> Source's next relation block address 
+ * Update relation record block given the offset to the recored from the begining, i:e
+ *  recordOffset 0 --> Source address
+ *  recordOffset 1 --> Destination address
+ *  recordOffset 2 --> Source's next relation block address
  *  recordOffset 3 --> Source's next relation block partition id
- *                          .
- *                          .
- *                          .
+ *  recordOffset 4 --> Source's previous relation block address
+ *  recordOffset 5 --> Source's previous relation block partition id
+ *  recordOffset 6 --> Destination's next relation block address
+ *  recordOffset 7 --> Destination's next relation block partition id
+ *  recordOffset 8 --> Destination's previous relation block address
+ *  recordOffset 9 --> Destination's previous relation block partition id
  * recordOffset 10 --> Relation's property address in the properties DB
  * */
-bool RelationBlock::updateRelationRecords(int recordOffset, unsigned int data) {
-    int dataOffset = RECORD_SIZE * recordOffset;
+bool RelationBlock::updateRelationRecords(RelationOffsets recordOffset, unsigned int data) {
+    int offsetValue = static_cast<int>(recordOffset);
+    int dataOffset = RECORD_SIZE * offsetValue;
     RelationBlock::relationsDB->seekg(this->addr + dataOffset);
     if (!RelationBlock::relationsDB->write(reinterpret_cast<char*>(&data), RECORD_SIZE)) {
-        relation_block_logger.error("Error while updating relation data record offset " + std::to_string(recordOffset) +
+        relation_block_logger.error("Error while updating relation data record offset " + std::to_string(offsetValue) +
                                     "data " + std::to_string(data));
         return false;
     }
@@ -295,8 +297,64 @@ bool RelationBlock::updateRelationRecords(int recordOffset, unsigned int data) {
 bool RelationBlock::isInUse() { return this->usage == '\1'; }
 unsigned int RelationBlock::nextRelationIndex = 1;  // Starting with 1 because of the 0 and '\0' differentiation issue
 
+void RelationBlock::addProperty(std::string name, char* value) {
+    if (this->propertyAddress == 0) {
+        PropertyLink* newLink = PropertyLink::create(name, value);
+        if (newLink) {
+            this->propertyAddress = newLink->blockAddress;
+            // If it was an empty prop link before inserting, Then update the property reference of this node
+            // block
+            this->updateRelationRecords(RelationOffsets::RELATION_PROPS, this->propertyAddress);
+        } else {
+            throw "Error occurred while adding a new property link to " + std::to_string(this->addr) + " node block";
+        }
+    } else {
+        this->propertyAddress = this->getPropertyHead()->insert(name, value);
+    }
+}
+PropertyLink* RelationBlock::getPropertyHead() { return PropertyLink::get(this->propertyAddress); }
+
+std::map<std::string, char*> RelationBlock::getAllProperties() {
+    std::map<std::string, char*> allProperties;
+    PropertyLink* current = this->getPropertyHead();
+    while (current) {
+        allProperties.insert({current->name, current->value});
+        PropertyLink* temp = current->next();
+        delete current;  // To prevent memory leaks
+        current = temp;
+    }
+    delete current;
+    return allProperties;
+}
+
+/**
+ * Get the source node in the current (this) relationship
+ *
+ * */
+NodeBlock* RelationBlock::getSource() {
+    if (this->sourceBlock) {
+        return sourceBlock;
+    } else {
+        relation_block_logger.warn("Get source from node block address is not implemented yet!");
+        return NULL;
+    }
+}
+
+/**
+ * Get the destination node in the relationship
+ *
+ * */
+NodeBlock* RelationBlock::getDestination() {
+    if (this->destinationBlock) {
+        return destinationBlock;
+    } else {
+        relation_block_logger.warn("Get destination from node block address is not implemented yet!");
+        return NULL;
+    }
+}
+
 const unsigned long RelationBlock::BLOCK_SIZE = RelationBlock::RECORD_SIZE * 11;
-// One relation block holds 11 recods such as source addres, destination address, source next relation address ect . .
+// One relation block holds 11 recods such as source addres, destination address, source next relation address etc.
 // and one record is typically 4 bytes (size of unsigned int)
 std::string RelationBlock::DB_PATH = "streamStore/relations.db";
 std::fstream* RelationBlock::relationsDB = NULL;

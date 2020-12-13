@@ -1,5 +1,5 @@
 /**
-Copyright 2020 JasminGraph Team
+Copyright 2020 JasmineGraph Team
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -13,7 +13,6 @@ limitations under the License.
 
 #include "PropertyLink.h"
 
-#include <iostream>
 #include <sstream>
 #include <vector>
 
@@ -25,13 +24,13 @@ PropertyLink::PropertyLink(unsigned int propertyBlockAddress) : blockAddress(pro
     if (propertyBlockAddress > 0) {
         this->propertiesDB->seekg(propertyBlockAddress);
         char rawName[PropertyLink::MAX_NAME_SIZE] = {0};
-        // char rawValue[PropertyLink::MAX_VALUE_SIZE] = {0};
 
         if (!this->propertiesDB->read(reinterpret_cast<char*>(&rawName), PropertyLink::MAX_NAME_SIZE)) {
             property_link_logger.error("Error while reading property name from block " + std::to_string(blockAddress));
         }
-        property_link_logger.debug("Current FD curser position = " + std::to_string(this->propertiesDB->tellg()) +
-                                   " when reading = " + std::to_string(blockAddress));
+        property_link_logger.debug(
+            "Current file descriptor curser position = " + std::to_string(this->propertiesDB->tellg()) +
+            " when reading = " + std::to_string(blockAddress));
         if (!this->propertiesDB->read(reinterpret_cast<char*>(&this->value), PropertyLink::MAX_VALUE_SIZE)) {
             property_link_logger.error("Error while reading property value from block " + std::to_string(blockAddress));
         }
@@ -42,7 +41,6 @@ PropertyLink::PropertyLink(unsigned int propertyBlockAddress) : blockAddress(pro
         }
 
         this->name = std::string(rawName);
-        // this->value = rawValue;
     }
 };
 
@@ -56,13 +54,13 @@ PropertyLink::PropertyLink(unsigned int blockAddress, std::string name, char* rv
 
 /**
  * pseudo code for inserting an element to a property (single) link list
- * ### Note: This link list implimentation adds a new link to the tail of the link, unlike in normal case relocating the
+ * ### Note: This link list implementation adds a new link to the tail of the link, unlike in normal case relocating the
  * head link
  *
  * propertyAddress; If no property address means no property has been stored if(!propertyAddress) { // Means
  * this is the very first link in the chain yet to be filled store property in this link it self } else if ( //Check
  * this property name is available in this link) {
- *      // If so Update the current link
+ *      // If so update the current link
  *  } else {
  *      // Check if this->next() exist
  *      if(this->next()) {
@@ -89,7 +87,7 @@ unsigned int PropertyLink::insert(std::string name, char* value) {
 
     if (this->name == name) {
         // TODO[tmkasun]: update existing property value
-        property_link_logger.error("Property key/name already exist key = " + std::string(name));
+        property_link_logger.warn("Property key/name already exist key = " + std::string(name));
         return this->blockAddress;
     } else if (this->next()) {  // Traverse to the edge/end of the link list
         return this->next()->insert(name, value);
@@ -180,8 +178,6 @@ PropertyLink* PropertyLink::get(unsigned int propertyBlockAddress) {
     }
     return pl;
 }
-const unsigned long PropertyLink::PROPERTY_BLOCK_SIZE =
-    PropertyLink::MAX_NAME_SIZE + PropertyLink::MAX_VALUE_SIZE + sizeof(unsigned int);
 unsigned int PropertyLink::nextPropertyIndex = 1;  // Starting with 1 because of the 0 and '\0' differentiation issue
 std::string PropertyLink::DB_PATH = "streamStore/properties.db";
 std::fstream* PropertyLink::propertiesDB = NULL;

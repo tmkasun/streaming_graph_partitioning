@@ -9,6 +9,7 @@
 #include "libs/Partition.h"
 #include "libs/Partitioner.h"
 #include "libs/graphStore/NodeManager.h"
+#include "libs/graphStore/RelationBlock.h"
 #include "libs/headers/KafkaTest.h"
 
 #ifdef ENABLEWS
@@ -25,7 +26,12 @@ int main(int argc, char* argv[]) {
     spdlog::info("Testing streaming store . . .");
     clock_t start = clock();
     Partitioner graphPartitioner(4);
-    NodeManager* nm = new NodeManager("trunk");
+    GraphConfig gc;
+    gc.graphID = 1;
+    gc.partitionID = 1;
+    gc.maxLabelSize = 10;
+    gc.openMode = "trunk";
+    NodeManager* nm = new NodeManager(gc);
 #ifdef ENABLEWS
     BroadcastServer edgesWSServer;
     std::thread senderThread;
@@ -34,9 +40,7 @@ int main(int argc, char* argv[]) {
 #endif  // ENABLEWS
 
     cppkafka::Configuration configs = {{"metadata.broker.list", "127.0.0.1:9092"}, {"group.id", "knnect"}};
-    // cppkafka::Consumer cons(configs);
     KafkaTest ktesting(configs);
-
     ktesting.Subscribe("testtopic");
 
     while (true) {
@@ -70,27 +74,43 @@ int main(int argc, char* argv[]) {
         auto edgeJson = json::parse(data);
         auto sourceJson = edgeJson["source"];
         auto destinationJson = edgeJson["destination"];
+
         std::string sId = std::string(sourceJson["id"]);
         std::string dId = std::string(destinationJson["id"]);
 
         std::pair<long, long> edge = {std::stol(sId), std::stol(dId)};
         partitionedEdge pe = graphPartitioner.addEdge(edge);
 
-        pair<NodeBlock, NodeBlock> nodes = nm->addEdge({sId, dId});
+        RelationBlock* newRelation = nm->addEdge({sId, dId});
+        if (!newRelation) {
+            continue;
+        }
+        char value[PropertyLink::MAX_VALUE_SIZE] = {};
+
+        if (edgeJson.contains("properties")) {
+            auto edgeProperties = edgeJson["properties"];
+            for (auto it = edgeProperties.begin(); it != edgeProperties.end(); it++) {
+                strcpy(value, it.value().get<std::string>().c_str());
+                // string value = it.value().get<std::string>();
+                spdlog::debug("Edge property Key = {} value = {}", string(it.key()), value);
+                newRelation->addProperty(string(it.key()), &value[0]);
+            }
+        }
+
         if (sourceJson.contains("properties")) {
             auto sourceProps = sourceJson["properties"];
             for (auto it = sourceProps.begin(); it != sourceProps.end(); it++) {
-                spdlog::debug("Key = {} value = ", it.key(), it.value());
-                string value = it.value().get<std::string>();
-                nodes.first.addProperty(string(it.key()), &value[0]);
+                spdlog::debug("Key = {} value = {}", it.key(), it.value());
+                strcpy(value, it.value().get<std::string>().c_str());
+                newRelation->getSource()->addProperty(string(it.key()), &value[0]);
             }
         }
         if (destinationJson.contains("properties")) {
             auto destProps = destinationJson["properties"];
             for (auto it = destProps.begin(); it != destProps.end(); it++) {
-                spdlog::debug("Key = {} value = ", it.key(), it.value());
-                string value = it.value().get<std::string>();
-                nodes.second.addProperty(string(it.key()), &value[0]);
+                spdlog::debug("Key = {} value = {}", it.key(), it.value());
+                strcpy(value, it.value().get<std::string>().c_str());
+                newRelation->getDestination()->addProperty(string(it.key()), &value[0]);
             }
         }
 

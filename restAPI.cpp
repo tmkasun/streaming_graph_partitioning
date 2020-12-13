@@ -1,15 +1,18 @@
 
 #include <spdlog/spdlog.h>
 
-#include "libs/restAPI/GraphEndpoint.cpp"
 #include "libs/graphStore/NodeManager.h"
+#include "libs/restAPI/GraphEndpoint.cpp"
 
 using namespace std;
 
 int main(int argc, char* argv[]) {
     Port port(9080);
     spdlog::set_level(spdlog::level::debug);
-    NodeManager* nm = new NodeManager("app");
+    GraphConfig gc;
+    gc.maxLabelSize = 10;
+    gc.openMode = "app";
+    NodeManager* nm = new NodeManager(gc);
 
     spdlog::info("Starting streaming graph store REST API . . ");
     int thr = 2;

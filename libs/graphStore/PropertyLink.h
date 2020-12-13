@@ -1,5 +1,5 @@
 /**
-Copyright 2020 JasminGraph Team
+Copyright 2020 JasmineGraph Team
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -23,10 +23,11 @@ class PropertyLink {
    public:
     static const unsigned long MAX_NAME_SIZE = 12;    // Size of a property name in bytes
     static const unsigned long MAX_VALUE_SIZE = 180;  // Size of a property value in bytes
-    static const unsigned long PROPERTY_BLOCK_SIZE;
-    static unsigned int nextPropertyIndex;  // Next available property block index // unless open in wipe data
-                                            // mode(trunc) need to set this value to property db seekp()/BLOCK_SIZE
-
+    static unsigned int nextPropertyIndex;            // Next available property block index
+    // unless open in wipe data
+    // mode(trunc) need to set this value to property db seekp()/BLOCK_SIZE
+    static const unsigned long PROPERTY_BLOCK_SIZE = MAX_NAME_SIZE + MAX_VALUE_SIZE + sizeof(unsigned int);
+    
     std::string name;
     char value[PropertyLink::MAX_VALUE_SIZE] = {0};
     unsigned int blockAddress;  // contains the address of the first element in the list
