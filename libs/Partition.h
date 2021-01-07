@@ -15,7 +15,7 @@ class Partition {
         - Elements are inserted in random order, rather than being inserted in order.
         - Insertions and lookups are interleaved; we don't have distinct insertion and lookup phases.
     */
-    std::map<int, std::set<int>> edgeList;
+    std::map<std::string, std::set<std::string>> edgeList;
     /**
      * Edge cuts data structure
      * [id]                    [id]                 ...       [id]
@@ -24,7 +24,7 @@ class Partition {
      * {res->(foreign,..)} {res->(foreign,..) }     ...   {res->(foreign,..) }
      * 
      * **/
-    std::vector<std::map<int, std::unordered_set<int>>> edgeCuts;
+    std::vector<std::map<std::string, std::unordered_set<std::string>>> edgeCuts;
     int id;
     int numberOfPartitions;  // Size of the cluster TODO: can be removed
 
@@ -36,12 +36,12 @@ class Partition {
             this->edgeCuts.push_back({});
         }
     };
-    void addEdge(std::pair<int, int> edge);
-    std::set<int> getNeighbors(int);
-    double partitionScore(int vertex);
+    void addEdge(std::pair<std::string, std::string> edge);
+    std::set<std::string> getNeighbors(std::string);
+    double partitionScore(std::string vertex);
     double getEdgesCount();
     double getVertextCount();
-    void addToEdgeCuts(int resident, int foriegn, int partitionId);
+    void addToEdgeCuts(std::string resident, std::string foreign, int partitionId);
     float edgeCutsRatio();
     template <typename Out>
     static void _split(const std::string &s, char delim, Out result);
@@ -49,7 +49,7 @@ class Partition {
     long edgeCutsCount();
     void printEdgeCuts();
     void printEdges();
-    bool isExist(double vertext);
+    bool isExist(std::string);
 };
 
 #endif

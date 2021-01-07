@@ -31,7 +31,7 @@ NodeManager::NodeManager(GraphConfig gConfig) {
 
     std::string graphPrefix = "databases/g" + std::to_string(graphID);
     std::string dbPrefix = graphPrefix + "_p" + std::to_string(partitionID);
-
+    std::string nodesDBPath = dbPrefix + "_nodes.db";
     this->index_db_loc = dbPrefix + "_nodes.index.db";
 
     if (gConfig.maxLabelSize) {
@@ -42,15 +42,14 @@ NodeManager::NodeManager(GraphConfig gConfig) {
         openMode = std::ios::app;  // if app, open in append mode
         this->nodeIndex = readNodeIndex();
     }
-    NodeBlock::nodesDB =
-        new std::fstream(dbPrefix + "_nodes.db", std::ios::in | std::ios::out | openMode | std::ios::binary);
+    NodeBlock::nodesDB = new std::fstream(nodesDBPath, std::ios::in | std::ios::out | openMode | std::ios::binary);
     PropertyLink::propertiesDB =
         new std::fstream(dbPrefix + "_properties.db", std::ios::in | std::ios::out | openMode | std::ios::binary);
     RelationBlock::relationsDB =
         new std::fstream(dbPrefix + "_relations.db", std::ios::in | std::ios::out | openMode | std::ios::binary);
     // TODO (tmkasun): set PropertyLink nextPropertyIndex after validating by modulus check from file number of bytes
 
-    if (dbSize(NodeManager::NODE_DB_PATH) % NodeBlock::BLOCK_SIZE != 0) {
+    if (dbSize(nodesDBPath) % NodeBlock::BLOCK_SIZE != 0) {
         std::string errorMessage =
             "Node DB size does not comply to node block size Path = " + NodeManager::NODE_DB_PATH;
         node_manager_logger.error(errorMessage);

@@ -4,23 +4,23 @@
 #include <vector>
 
 // This addition is undirectional , Add both items of the pair as keys
-void Partition::addEdge(std::pair<int, int> edge) {
+void Partition::addEdge(std::pair<std::string, std::string> edge) {
     auto exsistFirstVertext = this->edgeList.find(edge.first);
     if (exsistFirstVertext != this->edgeList.end()) {
         this->edgeList[edge.first].insert(edge.second);
     } else {
-        this->edgeList[edge.first] = std::set<int>({edge.second});
+        this->edgeList[edge.first] = std::set<std::string>({edge.second});
     }
 
     auto exsistSecondVertext = this->edgeList.find(edge.second);
     if (exsistSecondVertext != this->edgeList.end()) {
         this->edgeList[edge.second].insert(edge.first);
     } else {
-        this->edgeList[edge.second] = std::set<int>({edge.first});
+        this->edgeList[edge.second] = std::set<std::string>({edge.first});
     }
 }
 
-std::set<int> Partition::getNeighbors(int vertex) {
+std::set<std::string> Partition::getNeighbors(std::string vertex) {
     auto exsist = this->edgeList.find(vertex);
     if (exsist != this->edgeList.end()) {
         return this->edgeList[vertex];
@@ -33,7 +33,7 @@ std::set<int> Partition::getNeighbors(int vertex) {
 // the size of G.
 double Partition::getEdgesCount() {
     double total = 0;
-    std::set<int> uniqueEdges;
+    std::set<std::string> uniqueEdges;
     for (auto edge : this->edgeList) {
         for (auto vertext : edge.second) {
             uniqueEdges.insert(edge.first + vertext);
@@ -73,13 +73,13 @@ std::vector<std::string> Partition::_split(const std::string &s, char delim) {
     return elems;
 }
 
-void Partition::addToEdgeCuts(int resident, int foreign, int partitionId) {
+void Partition::addToEdgeCuts(std::string resident, std::string foreign, int partitionId) {
     if (partitionId < this->numberOfPartitions) {
-        auto exsistResidentVertiext = this->edgeCuts[partitionId].find(resident);
-        if (exsistResidentVertiext != this->edgeCuts[partitionId].end()) {
+        auto exsistResidentVertex = this->edgeCuts[partitionId].find(resident);
+        if (exsistResidentVertex != this->edgeCuts[partitionId].end()) {
             this->edgeCuts[partitionId][resident].insert(foreign);
         } else {
-            this->edgeCuts[partitionId][resident] = std::unordered_set<int>({foreign});
+            this->edgeCuts[partitionId][resident] = std::unordered_set<std::string>({foreign});
         }
     }
 }
@@ -101,7 +101,7 @@ void Partition::printEdgeCuts() {
     for (auto partition : this->edgeCuts) {
         for (auto edgeList : partition) {
             std::cout << edgeList.first << " ____" << std::endl;
-            for (int vertext : edgeList.second) {
+            for (std::string vertext : edgeList.second) {
                 std::cout << "\t| ---> " << vertext << std::endl;
             }
             std::cout << "\n" << std::endl;
@@ -111,11 +111,11 @@ void Partition::printEdgeCuts() {
 
 void Partition::printEdges() {
     std::cout << "Printing edge list of " << id << " partition" << std::endl;
-    std::unordered_set<long> compositeVertextIDs;
+    std::unordered_set<std::string> compositeVertextIDs;
     for (auto edgeList : this->edgeList) {
         bool isFirst = true;
-        for (int vertext : edgeList.second) {
-            long compositeVertextID = edgeList.first + vertext;
+        for (std::string vertext : edgeList.second) {
+            std::string compositeVertextID = edgeList.first + vertext;
             if (compositeVertextIDs.find(compositeVertextID) == compositeVertextIDs.end()) {
                 if (isFirst) {
                     std::cout << edgeList.first << " ____" << std::endl;
@@ -129,7 +129,7 @@ void Partition::printEdges() {
     }
 }
 
-bool Partition::isExist(double vertext) {
+bool Partition::isExist(std::string vertext) {
     bool inEdgeList = this->edgeList.find(vertext) != this->edgeList.end();
     bool inEdgeCuts = false;
     for (size_t i = 0; i < this->numberOfPartitions; i++) {

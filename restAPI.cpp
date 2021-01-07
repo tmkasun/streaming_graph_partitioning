@@ -10,6 +10,8 @@ int main(int argc, char* argv[]) {
     Port port(9080);
     spdlog::set_level(spdlog::level::debug);
     GraphConfig gc;
+    gc.graphID = 1;
+    gc.partitionID = 1;
     gc.maxLabelSize = 10;
     gc.openMode = "app";
     NodeManager* nm = new NodeManager(gc);
