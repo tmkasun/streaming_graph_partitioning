@@ -11,6 +11,7 @@
 #include "libs/graphStore/NodeManager.h"
 #include "libs/graphStore/RelationBlock.h"
 #include "libs/headers/KafkaTest.h"
+#include "libs/transports/http/DataPublisher.h"
 
 #ifdef ENABLEWS
 #include "libs/transports/websocket/WebSocketServer.h"
@@ -21,6 +22,7 @@ using namespace std;
 using json = nlohmann::json;
 
 int main(int argc, char* argv[]) {
+    DataPublisher workerClient(8899, "127.0.0.1");
     spdlog::set_level(spdlog::level::debug);
     const int PARTITIONS_COUNT = 4;
     int graphID = 1;
@@ -86,6 +88,8 @@ int main(int argc, char* argv[]) {
         partitionedEdge pe = graphPartitioner.addEdge({sId, dId});
         sourceJson["pid"] = pe[0].second;
         destinationJson["pid"] = pe[1].second;
+        std::cout << destinationJson.dump() << std::endl;
+        workerClient.publish(destinationJson.dump());
         NodeBlock* sourceNode = nodeManagers.at(sourceJson["pid"].get<int>())->addNode(sId);
         NodeBlock* destinationNode = nodeManagers.at(destinationJson["pid"].get<int>())->addNode(dId);
         // RelationBlock* newRelation = nm->addEdge({sId, dId});

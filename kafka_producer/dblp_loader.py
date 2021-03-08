@@ -35,7 +35,7 @@ payloadTemplate = {
 }
 
 
-def file_feeder(limit=100):
+def file_feeder(limit=3):
     edges_count = 0
     with open("../data_sets/dblp/sample_sblp.10000.txt", 'r') as data_fd:
         for line in data_fd:

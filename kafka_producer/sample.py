@@ -23,7 +23,7 @@ payloadTemplate = {
 }
 
 
-def file_feeder(limit=100000):
+def file_feeder(limit=10):
     edges_count = 0
     with open("../data_sets/po.dl", 'r') as data_fd:
         for line in data_fd:

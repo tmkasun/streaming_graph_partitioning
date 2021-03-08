@@ -10,7 +10,7 @@ link_libraries('cppkafka')
 link_libraries('pthread')
 link_libraries('stdc++')
 
-add_executable(knnectCPP main.cpp util/logger/Logger.cpp libs/graphStore/PropertyLink.cpp libs/graphStore/RelationBlock.cpp libs/graphStore/NodeBlock.cpp libs/graphStore/NodeManager.cpp libs/headers/KafkaTest.h libs/KafkaTest.cpp libs/Partition.cpp libs/Partitioner.cpp libs/transports/websocket/WebSocketServer.cpp)
+add_executable(knnectCPP main.cpp util/logger/Logger.cpp libs/graphStore/PropertyLink.cpp libs/graphStore/RelationBlock.cpp libs/graphStore/NodeBlock.cpp libs/graphStore/NodeManager.cpp libs/headers/KafkaTest.h libs/KafkaTest.cpp libs/Partition.cpp libs/Partitioner.cpp libs/transports/websocket/WebSocketServer.cpp libs/transports/http/DataPublisher.cpp)
 add_executable(restAPI restAPI.cpp util/logger/Logger.cpp libs/graphStore/PropertyLink.cpp libs/graphStore/RelationBlock.cpp libs/graphStore/NodeBlock.cpp libs/graphStore/NodeManager.cpp)
 
 target_include_directories(knnectCPP PUBLIC "libs/external/spdlog-1.8.1/include") # For logging library
