@@ -11,8 +11,8 @@ int main(int argc, char* argv[]) {
     spdlog::set_level(spdlog::level::debug);
     GraphConfig gc;
     gc.graphID = 1;
-    gc.partitionID = 1;
-    gc.maxLabelSize = 10;
+    gc.partitionID = 0;
+    gc.maxLabelSize = 43;
     gc.openMode = "app";
     NodeManager* nm = new NodeManager(gc);
 
@@ -30,7 +30,13 @@ int main(int argc, char* argv[]) {
     spdlog::info("Number of threads in use for REST API = {}", thr);
 
     GraphEndpoint gEP(addr, nm);
+    spdlog::info("Graph info:");
+    spdlog::info("\t Graph ID: {}", gc.graphID);
+    spdlog::info("\t Graph partition ID: {}", gc.partitionID);
+    spdlog::info("\t Graph max label size: {}", gc.maxLabelSize);
 
+    spdlog::info("Graph REST API Started in port = {}", port);
+    gEP.logPaths();
     gEP.init(thr);
     gEP.start();
 }

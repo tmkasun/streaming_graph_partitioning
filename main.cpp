@@ -22,9 +22,9 @@ using namespace std;
 using json = nlohmann::json;
 
 int main(int argc, char* argv[]) {
-    DataPublisher workerClient(8899, "127.0.0.1");
+    DataPublisher workerClient(7780, "127.0.0.1");
     spdlog::set_level(spdlog::level::debug);
-    const int PARTITIONS_COUNT = 4;
+    const int PARTITIONS_COUNT = 1;
     int graphID = 1;
     std::vector<NodeManager*> nodeManagers;
 
@@ -32,8 +32,8 @@ int main(int argc, char* argv[]) {
         GraphConfig gc;
         gc.graphID = graphID;
         gc.partitionID = i;
-        gc.maxLabelSize = 10;
-        gc.openMode = "trunk";
+        gc.maxLabelSize = 43;
+        gc.openMode = "trunc";
         nodeManagers.push_back(new NodeManager(gc));
     };
     spdlog::info("Testing streaming store . . .");
@@ -89,47 +89,51 @@ int main(int argc, char* argv[]) {
         sourceJson["pid"] = pe[0].second;
         destinationJson["pid"] = pe[1].second;
         std::cout << destinationJson.dump() << std::endl;
-        workerClient.publish(destinationJson.dump());
+        // workerClient.publish(destinationJson.dump());
         NodeBlock* sourceNode = nodeManagers.at(sourceJson["pid"].get<int>())->addNode(sId);
         NodeBlock* destinationNode = nodeManagers.at(destinationJson["pid"].get<int>())->addNode(dId);
-        // RelationBlock* newRelation = nm->addEdge({sId, dId});
-        // if (!newRelation) {
-        //     continue;
-        // }
-        // char value[PropertyLink::MAX_VALUE_SIZE] = {};
+        RelationBlock* newRelation = nodeManagers.at(0)->addEdge({sId, dId});
+        if (!newRelation) {
+            continue;
+        }
+        char value[PropertyLink::MAX_VALUE_SIZE] = {};
 
-        // if (edgeJson.contains("properties")) {
-        //     auto edgeProperties = edgeJson["properties"];
-        //     for (auto it = edgeProperties.begin(); it != edgeProperties.end(); it++) {
-        //         strcpy(value, it.value().get<std::string>().c_str());
-        //         // string value = it.value().get<std::string>();
-        //         spdlog::debug("Edge property Key = {} value = {}", string(it.key()), value);
-        //         newRelation->addProperty(string(it.key()), &value[0]);
-        //     }
-        // }
+        if (edgeJson.contains("properties")) {
+            auto edgeProperties = edgeJson["properties"];
+            for (auto it = edgeProperties.begin(); it != edgeProperties.end(); it++) {
+                strcpy(value, it.value().get<std::string>().c_str());
+                // string value = it.value().get<std::string>();
+                spdlog::debug("Edge property Key = {} value = {}", string(it.key()), value);
+                newRelation->addProperty(string(it.key()), &value[0]);
+            }
+        }
 
-        // if (sourceJson.contains("properties")) {
-        //     auto sourceProps = sourceJson["properties"];
-        //     for (auto it = sourceProps.begin(); it != sourceProps.end(); it++) {
-        //         spdlog::debug("Key = {} value = {}", it.key(), it.value());
-        //         strcpy(value, it.value().get<std::string>().c_str());
-        //         newRelation->getSource()->addProperty(string(it.key()), &value[0]);
-        //     }
-        // }
-        // if (destinationJson.contains("properties")) {
-        //     auto destProps = destinationJson["properties"];
-        //     for (auto it = destProps.begin(); it != destProps.end(); it++) {
-        //         spdlog::debug("Key = {} value = {}", it.key(), it.value());
-        //         strcpy(value, it.value().get<std::string>().c_str());
-        //         newRelation->getDestination()->addProperty(string(it.key()), &value[0]);
-        //     }
-        // }
+        if (sourceJson.contains("properties")) {
+            auto sourceProps = sourceJson["properties"];
+            for (auto it = sourceProps.begin(); it != sourceProps.end(); it++) {
+                spdlog::debug("Key = {} value = {}", it.key(), it.value());
+                strcpy(value, it.value().get<std::string>().c_str());
+                newRelation->getSource()->addProperty(string(it.key()), &value[0]);
+            }
+        }
+        if (destinationJson.contains("properties")) {
+            auto destProps = destinationJson["properties"];
+            for (auto it = destProps.begin(); it != destProps.end(); it++) {
+                spdlog::debug("Key = {} value = {}", it.key(), it.value());
+                strcpy(value, it.value().get<std::string>().c_str());
+                newRelation->getDestination()->addProperty(string(it.key()), &value[0]);
+            }
+        }
 
         std::string wsData =
             pe[0].first + " " + std::to_string(pe[0].second) + " " + pe[1].first + " " + std::to_string(pe[1].second);
     }
     // nm->close();
     // delete nm;
+    for (auto& nm : nodeManagers) {
+        nm->close();
+        delete nm;
+    }
     graphPartitioner.printStats();
 #ifdef ENABLEWS
     edgesWSServer.broadcast(wsData);

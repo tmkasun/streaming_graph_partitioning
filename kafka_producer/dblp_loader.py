@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from kafka import KafkaProducer
 from time import sleep
 from datetime import datetime

@@ -12,6 +12,7 @@ link_libraries('stdc++')
 
 add_executable(knnectCPP main.cpp util/logger/Logger.cpp libs/graphStore/PropertyLink.cpp libs/graphStore/RelationBlock.cpp libs/graphStore/NodeBlock.cpp libs/graphStore/NodeManager.cpp libs/headers/KafkaTest.h libs/KafkaTest.cpp libs/Partition.cpp libs/Partitioner.cpp libs/transports/websocket/WebSocketServer.cpp libs/transports/http/DataPublisher.cpp)
 add_executable(restAPI restAPI.cpp util/logger/Logger.cpp libs/graphStore/PropertyLink.cpp libs/graphStore/RelationBlock.cpp libs/graphStore/NodeBlock.cpp libs/graphStore/NodeManager.cpp)
+add_executable(testDataPublisher tests/dataPublisher.cpp util/logger/Logger.cpp libs/transports/http/DataPublisher.cpp)
 
 target_include_directories(knnectCPP PUBLIC "libs/external/spdlog-1.8.1/include") # For logging library
 target_include_directories(knnectCPP PUBLIC "libs/external/json-3.9.1/include") # For logging library
@@ -19,5 +20,10 @@ target_include_directories(knnectCPP PUBLIC "libs/external/json-3.9.1/include") 
 
 target_include_directories(restAPI PUBLIC "libs/external/spdlog-1.8.1/include") # For logging library
 target_include_directories(restAPI PUBLIC "libs/external/json-3.9.1/include") # For logging library
+
+
+target_include_directories(testDataPublisher PUBLIC "libs/external/spdlog-1.8.1/include") # For logging library
+target_include_directories(testDataPublisher PUBLIC "libs/external/json-3.9.1/include") # For logging library
+
 find_package(Pistache 0.0.2 REQUIRED)
 target_link_libraries(restAPI pistache_shared)

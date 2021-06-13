@@ -58,7 +58,7 @@ class NodeManager {
     void close();
     NodeBlock* addNode(std::string);  // will redurn DB block address
     NodeBlock* get(std::string);
-    std::list<NodeBlock> getGraph(int limit = 10);
+    std::list<NodeBlock> getGraph(int limit = 10, int page = 0);
 };
 
 #endif

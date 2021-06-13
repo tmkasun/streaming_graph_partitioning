@@ -1,6 +1,7 @@
 #include <pistache/endpoint.h>
 #include <pistache/http.h>
 #include <pistache/router.h>
+#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <nlohmann/json.hpp>
@@ -17,8 +18,9 @@ void handleReady(const Rest::Request&, Http::ResponseWriter response) { response
 
 class GraphEndpoint {
    public:
+    const static std::vector<std::string> paths;
     explicit GraphEndpoint(Address addr, NodeManager* _nm)
-        : httpEndpoint(std::make_shared<Http::Endpoint>(addr)), nm(_nm) {}
+        : httpEndpoint(std::make_shared<Http::Endpoint>(addr)), nm(_nm), addr(addr) {}
 
     void init(size_t thr = 2) {
         auto opts = Http::Endpoint::options().threads(static_cast<int>(thr));
@@ -31,13 +33,22 @@ class GraphEndpoint {
         httpEndpoint->serve();
     }
 
+    void logPaths() {
+        spdlog::info("Available endpoints:");
+        std::string port = addr.port().toString();
+        std::string host = addr.host();
+        for (std::string path : paths) {
+            spdlog::info("\t http://{}:{}{}", host, port, path);
+        }
+    }
+
    private:
     void setupRoutes() {
         using namespace Rest;
 
-        Routes::Post(router, "/record/:name/:value?", Routes::bind(&GraphEndpoint::doGetVertext, this));
-        Routes::Get(router, "/graph/:gid/vertices/:id", Routes::bind(&GraphEndpoint::doGetVertext, this));
-        Routes::Get(router, "/graph/:gid", Routes::bind(&GraphEndpoint::doGetVertices, this));
+        Routes::Post(router, paths[0], Routes::bind(&GraphEndpoint::doGetVertext, this));
+        Routes::Get(router, paths[1], Routes::bind(&GraphEndpoint::doGetVertext, this));
+        Routes::Get(router, paths[2], Routes::bind(&GraphEndpoint::doGetVertices, this));
     }
 
     void doGetVertices(const Rest::Request& request, Http::ResponseWriter response) {
@@ -91,7 +102,8 @@ class GraphEndpoint {
         }
         json payload = json::object({});
         payload["id"] = vertext.id;
-        payload["properties"] = json::object({{"edges", edgesArray}, {"nodeProps", propertiesJson}});
+        payload["edges"] = edgesArray;
+        payload["properties"] = propertiesJson;
         return payload;
     }
 
@@ -101,4 +113,7 @@ class GraphEndpoint {
     NodeManager* nm = NULL;
     std::shared_ptr<Http::Endpoint> httpEndpoint;
     Rest::Router router;
+    Address addr;
 };
+const std::vector<std::string> GraphEndpoint::paths = {"/record/:name/:value?", "/graph/:gid/vertices/:id",
+                                                       "/graph/:gid"};

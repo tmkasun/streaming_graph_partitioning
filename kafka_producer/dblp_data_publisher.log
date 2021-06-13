@@ -1,0 +1,16 @@
+INFO: 03/10/2021 12:30:17 PM <BrokerConnection node_id=bootstrap host=127.0.0.1:9092 <connecting> [IPv4 ('127.0.0.1', 9092)]>: connecting to 127.0.0.1:9092 [('127.0.0.1', 9092) IPv4]
+INFO: 03/10/2021 12:30:17 PM Probing node bootstrap broker version
+INFO: 03/10/2021 12:30:17 PM <BrokerConnection node_id=bootstrap host=127.0.0.1:9092 <connecting> [IPv4 ('127.0.0.1', 9092)]>: Connection complete.
+INFO: 03/10/2021 12:30:17 PM Broker version identifed as 1.0.0
+INFO: 03/10/2021 12:30:17 PM Set configuration api_version=(1, 0, 0) to skip auto check_version requests on startup
+INFO: 03/10/2021 12:30:17 PM Processing publication id = 100001334
+INFO: 03/10/2021 12:30:17 PM Submitted 3 of co-author pairs
+INFO: 03/10/2021 12:30:17 PM Processing publication id = 1000018889
+INFO: 03/10/2021 12:30:17 PM Submitted 6 of co-author pairs
+INFO: 03/10/2021 12:30:17 PM Processing publication id = 1000022707
+INFO: 03/10/2021 12:30:17 PM Submitted 0 of co-author pairs
+INFO: 03/10/2021 12:30:17 PM Closing the Kafka producer with 9223372036.0 secs timeout.
+INFO: 03/10/2021 12:30:17 PM <BrokerConnection node_id=0 host=KasunEdu:9092 <connecting> [IPv4 ('127.0.1.1', 9092)]>: connecting to KasunEdu:9092 [('127.0.1.1', 9092) IPv4]
+INFO: 03/10/2021 12:30:17 PM <BrokerConnection node_id=0 host=KasunEdu:9092 <connecting> [IPv4 ('127.0.1.1', 9092)]>: Connection complete.
+INFO: 03/10/2021 12:30:17 PM <BrokerConnection node_id=bootstrap host=127.0.0.1:9092 <connected> [IPv4 ('127.0.0.1', 9092)]>: Closing connection. 
+INFO: 03/10/2021 12:30:17 PM <BrokerConnection node_id=0 host=KasunEdu:9092 <connected> [IPv4 ('127.0.1.1', 9092)]>: Closing connection. 
