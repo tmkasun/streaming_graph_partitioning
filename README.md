@@ -6,17 +6,79 @@ The only difference is , Practitioner accept edge of a graph instead of single v
 I have develp this code for testing out different streaming graph partitioning algorithms, and validate and try out the partioninig quality with visualization.
 ![Demo](https://user-images.githubusercontent.com/3313885/59002385-d8951480-882f-11e9-89f7-c9d006a97d77.gif)
 
-
 ## Technology stack
 
 Partitioning algorithms are implemented in cpp+11 and visualization is done using Cytoscape.js. Use Apache Kafka for consume stream of edges in a graph.
 A python script is used for streaming edges from a graph in a file. It can also stream a graph by taking user inputs from the terminal.
 Practitioner accept the graph as a stream of edges , where edge contains a space separated vertex pair, i:e `22 45`
 
+## Running
+
+#### Installing
+
+This tool uses cmake for managing package versions and building the binaries. CMake 3.10 or latest version is required to build the tool.
+
+Moreover following packages are being used for the purpose mentioned below. You need to install them seperatly.
+
+* [Pistache](https://github.com/pistacheio/pistache "REST API Library") : Use for developing the websocket and REST API for the live streaming and fetching graph meta data
+
+- GCC 9.1.0 (recommended) or above
+- SQLite3 (https://www.sqlite.org/download.html)
+
+  - Download the `sqlite-autoconf-3390200` from this [URL](https://www.sqlite.org/2022/sqlite-autoconf-3390200.tar.gz).
+  - Extract `sqlite-autoconf-3390200.tar.gz` to some location. E.g., `/media/user/software/sqlite-autoconf-3390200-install`
+  - Change to that location and run `./configure --prefix=/media/user/software/sqlite-autoconf-3390200`
+  - Issue "make" followed by "sudo make install"
+  - Once installed specify the `target_link_libraries` path to `libsqlite3`.
+    E.g., `target_link_libraries(JasmineGraph /media/user/software/sqlite-autoconf-3390200/lib/libsqlite3.so)`
+- cppkafka (https://github.com/mfontanini/cppkafka)
+
+  - Install librdkafka - Follow the Readme in (https://github.com/edenhill/librdkafka) - use `sudo apt install librdkafka-dev`
+  - Install boost library - use `sudo apt-get install libboost-all-dev`
+  - Follow the guidelines in (https://github.com/mfontanini/cppkafka#compiling) - use cppkafka release [v0.3.1](https://github.com/mfontanini/cppkafka/archive/refs/tags/v0.3.1.zip)
+  - When doing the above step for `cmake <OPTIONS> ..` use of `cmake ..` should be sufficient enough
+  - Once cppkafka is built install it by running `sudo make install` from the build directory
+- SpdLog (https://github.com/gabime/spdlog)
+
+  - Clone or download the repository from the above link
+  - Issue "cmake ."
+  - Issue "make" followed by "sudo make install"
+- SQLite3 (https://www.sqlite.org/download.html)
+
+  - Download the `sqlite-autoconf-3390200` from this [URL](https://www.sqlite.org/2022/sqlite-autoconf-3390200.tar.gz).
+  - Extract `sqlite-autoconf-3390200.tar.gz` to some location. E.g., `/media/user/software/sqlite-autoconf-3390200-install`
+  - Change to that location and run `./configure --prefix=/media/user/software/sqlite-autoconf-3390200`
+  - Issue "make" followed by "sudo make install"
+  - Once installed specify the `target_link_libraries` path to `libsqlite3`.
+    E.g., `target_link_libraries(JasmineGraph /media/user/software/sqlite-autoconf-3390200/lib/libsqlite3.so)`
+- SQLite3 (https://www.sqlite.org/download.html)
+
+  - Download the `sqlite-autoconf-3390200` from this [URL](https://www.sqlite.org/2022/sqlite-autoconf-3390200.tar.gz).
+  - Extract `sqlite-autoconf-3390200.tar.gz` to some location. E.g., `/media/user/software/sqlite-autoconf-3390200-install`
+  - Change to that location and run `./configure --prefix=/media/user/software/sqlite-autoconf-3390200`
+  - Issue "make" followed by "sudo make install"
+  - Once installed specify the `target_link_libraries` path to `libsqlite3`.
+    E.g., `target_link_libraries(JasmineGraph /media/user/software/sqlite-autoconf-3390200/lib/libsqlite3.so)`
+- SQLite3 (https://www.sqlite.org/download.html)
+
+  - Download the `sqlite-autoconf-3390200` from this [URL](https://www.sqlite.org/2022/sqlite-autoconf-3390200.tar.gz).
+  - Extract `sqlite-autoconf-3390200.tar.gz` to some location. E.g., `/media/user/software/sqlite-autoconf-3390200-install`
+  - Change to that location and run `./configure --prefix=/media/user/software/sqlite-autoconf-3390200`
+  - Issue "make" followed by "sudo make install"
+  - Once installed specify the `target_link_libraries` path to `libsqlite3`.
+    E.g., `target_link_libraries(JasmineGraph /media/user/software/sqlite-autoconf-3390200/lib/libsqlite3.so)`
+- SQLite3 (https://www.sqlite.org/download.html)
+
+  - Download the `sqlite-autoconf-3390200` from this [URL](https://www.sqlite.org/2022/sqlite-autoconf-3390200.tar.gz).
+  - Extract `sqlite-autoconf-3390200.tar.gz` to some location. E.g., `/media/user/software/sqlite-autoconf-3390200-install`
+  - Change to that location and run `./configure --prefix=/media/user/software/sqlite-autoconf-3390200`
+  - Issue "make" followed by "sudo make install"
+  - Once installed specify the `target_link_libraries` path to `libsqlite3`.
+    E.g., `target_link_libraries(JasmineGraph /media/user/software/sqlite-autoconf-3390200/lib/libsqlite3.so)`
+
 ## More on Streaming Graphs
 
 This was implemented as a part of adding new streaming graph partitioning algorithm to [Jasmine Graph server](https://github.com/miyurud/jasminegraph). You could try out Jasmine graph server for more robust work on graph partitioning and analysis.
-
 
 ## Algorithms
 
@@ -38,7 +100,6 @@ https://www.codecogs.com/latex/eqneditor.php
 Intra partition cost
 
 ![CodeCogsEqn (1)](https://user-images.githubusercontent.com/3313885/58380913-3b3b1480-7fd5-11e9-9b50-5eea3d9e78d3.png)
-
 
 ## Results comparison
 
@@ -64,6 +125,7 @@ Intra partition cost
 3 => Cut ratio = 0.28296
 Time taken = 3.88941e+07 micro seconds
 ```
+
 ### Fennel
 
 ```
@@ -109,7 +171,6 @@ Time taken = 5.8881e+07 micro seconds
 3 => Cut ratio = 0.886054
 Time taken = 428249 micro seconds
 ```
-
 
 ## Sample output
 

@@ -25,5 +25,5 @@ target_include_directories(restAPI PUBLIC "libs/external/json-3.9.1/include") # 
 target_include_directories(testDataPublisher PUBLIC "libs/external/spdlog-1.8.1/include") # For logging library
 target_include_directories(testDataPublisher PUBLIC "libs/external/json-3.9.1/include") # For logging library
 
-find_package(Pistache 0.0.2 REQUIRED)
-target_link_libraries(restAPI pistache_shared)
+# find_package(Pistache REQUIRED)
+target_link_libraries(restAPI pistache)
